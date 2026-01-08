@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "248801536056",
+    "project_id": "resumeiq-ad69a",
+    "storage_bucket": "resumeiq-ad69a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:248801536056:android:fe02e3b658feb1ff221ecd",
+        "android_client_info": {
+          "package_name": "com.redevs.resumeiq"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "248801536056-l7pmc6419hq7ok66ub8ehmbk9tlmtij1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbaBCob2KPE-WUOI2BY3YeH3CWzrnwAvM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "248801536056-l7pmc6419hq7ok66ub8ehmbk9tlmtij1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
