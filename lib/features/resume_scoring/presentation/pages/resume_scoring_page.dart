@@ -11,8 +11,8 @@ import '../../../../shared/models/resume_score_model.dart';
 import '../../../../shared/models/resume_model.dart' as model;
 
 final scoringServiceProvider = Provider<ResumeScoringService>((ref) {
-  final geminiService = ref.watch(geminiServiceProvider);
-  return ResumeScoringService(geminiService);
+  final firebaseAI = ref.watch(firebaseAIServiceProvider);
+  return ResumeScoringService(firebaseAI);
 });
 
 class ResumeScoringPage extends ConsumerStatefulWidget {

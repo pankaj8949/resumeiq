@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../resume_builder/presentation/pages/resume_builder_page.dart';
+import '../../../resume_builder/presentation/pages/resume_templates_page.dart';
 import '../../../resume_scoring/presentation/pages/resume_scoring_page.dart';
 import '../../../mock_interview/presentation/pages/mock_interview_page.dart';
-import 'resume_history_page.dart';
+import '../../../profile/presentation/pages/profile_page.dart';
 
 /// Provider for managing navigation index
 final navigationIndexProvider = StateProvider<int>((ref) => 0);
@@ -20,10 +20,10 @@ class MainNavigationPage extends ConsumerWidget {
 
     final pages = [
       const DashboardContentPage(),
-      const ResumeBuilderPage(),
+      const ResumeTemplatesPage(),
       const ResumeScoringPage(),
       const MockInterviewPage(),
-      const ResumeHistoryPage(),
+      const ProfilePage(),
     ];
 
     return Scaffold(
@@ -92,9 +92,9 @@ class MainNavigationPage extends ConsumerWidget {
             label: 'Interview',
           ),
           NavigationDestination(
-            icon: Icon(Icons.history_outlined),
-            selectedIcon: Icon(Icons.history),
-            label: 'History',
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
       ),
@@ -160,7 +160,7 @@ class DashboardContentPage extends ConsumerWidget {
                   description: 'Create an ATS-optimized resume',
                   color: AppTheme.primaryColor,
                   onTap: () {
-                    // Navigate to Build Resume tab
+                    // Navigate to Build Resume tab (templates page)
                     ref.read(navigationIndexProvider.notifier).state = 1;
                   },
                 ),
@@ -185,12 +185,12 @@ class DashboardContentPage extends ConsumerWidget {
                   },
                 ),
                 _FeatureCard(
-                  icon: Icons.history,
-                  title: 'Resume History',
-                  description: 'View all your saved resumes',
+                  icon: Icons.person,
+                  title: 'Profile',
+                  description: 'View and edit your profile',
                   color: AppTheme.secondaryColor,
                   onTap: () {
-                    // Navigate to History tab
+                    // Navigate to Profile tab
                     ref.read(navigationIndexProvider.notifier).state = 4;
                   },
                 ),

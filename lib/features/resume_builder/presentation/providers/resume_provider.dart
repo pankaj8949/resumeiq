@@ -9,7 +9,7 @@ import '../../domain/usecases/generate_summary_usecase.dart';
 import '../../domain/usecases/delete_resume_usecase.dart';
 import '../../data/repositories/resume_repository_impl.dart';
 import '../../data/datasources/resume_remote_datasource.dart';
-import '../../../../shared/services/gemini_service.dart';
+import '../../../../shared/services/firebase_ai_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Resume state
@@ -83,7 +83,8 @@ class ResumeNotifier extends StateNotifier<ResumeState> {
     state = state.copyWith(isLoading: true, clearError: true);
     final result = await _getResumesUseCase(userId);
     result.fold(
-      (failure) => state = state.copyWith(isLoading: false, error: failure.message),
+      (failure) =>
+          state = state.copyWith(isLoading: false, error: failure.message),
       (resumes) => state = state.copyWith(isLoading: false, resumes: resumes),
     );
   }
@@ -98,10 +99,7 @@ class ResumeNotifier extends StateNotifier<ResumeState> {
         return null;
       },
       (resume) {
-        state = state.copyWith(
-          isLoading: false,
-          currentResume: resume,
-        );
+        state = state.copyWith(isLoading: false, currentResume: resume);
         return resume;
       },
     );
@@ -121,7 +119,7 @@ class ResumeNotifier extends StateNotifier<ResumeState> {
         final updatedResumes = state.resumes.map((r) {
           return r.id == updated.id ? updated : r;
         }).toList();
-        
+
         state = state.copyWith(
           isLoading: false,
           resumes: updatedResumes,
@@ -144,13 +142,10 @@ class ResumeNotifier extends StateNotifier<ResumeState> {
       education: education,
       skills: skills,
     );
-    return result.fold(
-      (failure) {
-        state = state.copyWith(error: failure.message);
-        return null;
-      },
-      (summary) => summary,
-    );
+    return result.fold((failure) {
+      state = state.copyWith(error: failure.message);
+      return null;
+    }, (summary) => summary);
   }
 
   /// Delete a resume
@@ -159,10 +154,7 @@ class ResumeNotifier extends StateNotifier<ResumeState> {
     final result = await _deleteResumeUseCase(resumeId);
     return result.fold(
       (failure) {
-        state = state.copyWith(
-          isLoading: false,
-          error: failure.message,
-        );
+        state = state.copyWith(isLoading: false, error: failure.message);
         return false;
       },
       (_) {
@@ -178,14 +170,14 @@ class ResumeNotifier extends StateNotifier<ResumeState> {
 }
 
 /// Providers
-final geminiServiceProvider = Provider<GeminiService?>((ref) {
-  // API key is handled by GeminiService constructor via GeminiConfig
+final firebaseAIServiceProvider = Provider<FirebaseAIService?>((ref) {
+  // Firebase AI service uses Firebase authentication
   try {
-    return GeminiService();
+    return FirebaseAIService();
   } catch (e) {
     // Log the error but don't crash the app
-    // The service will be null if API key is not configured
-    // Features that require Gemini will show appropriate error messages
+    // The service will be null if Firebase is not configured
+    // Features that require AI will show appropriate error messages
     return null;
   }
 });
@@ -197,7 +189,7 @@ final resumeRemoteDataSourceProvider = Provider<ResumeRemoteDataSource>((ref) {
 final resumeRepositoryProvider = Provider<ResumeRepository>((ref) {
   return ResumeRepositoryImpl(
     remoteDataSource: ref.watch(resumeRemoteDataSourceProvider),
-    geminiService: ref.watch(geminiServiceProvider),
+    firebaseAIService: ref.watch(firebaseAIServiceProvider),
   );
 });
 
@@ -225,15 +217,14 @@ final deleteResumeUseCaseProvider = Provider<DeleteResumeUseCase>((ref) {
   return DeleteResumeUseCase(ref.watch(resumeRepositoryProvider));
 });
 
-final resumeNotifierProvider = StateNotifierProvider<ResumeNotifier, ResumeState>((ref) {
-  return ResumeNotifier(
-    ref.watch(createResumeUseCaseProvider),
-    ref.watch(getUserResumesUseCaseProvider),
-    ref.watch(getResumeUseCaseProvider),
-    ref.watch(updateResumeUseCaseProvider),
-    ref.watch(generateSummaryUseCaseProvider),
-    ref.watch(deleteResumeUseCaseProvider),
-  );
-});
-
-
+final resumeNotifierProvider =
+    StateNotifierProvider<ResumeNotifier, ResumeState>((ref) {
+      return ResumeNotifier(
+        ref.watch(createResumeUseCaseProvider),
+        ref.watch(getUserResumesUseCaseProvider),
+        ref.watch(getResumeUseCaseProvider),
+        ref.watch(updateResumeUseCaseProvider),
+        ref.watch(generateSummaryUseCaseProvider),
+        ref.watch(deleteResumeUseCaseProvider),
+      );
+    });

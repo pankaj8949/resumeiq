@@ -124,7 +124,7 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
     }
 
     // At this point, resume is guaranteed to be non-null
-    final displayResume = resume!;
+    final displayResume = resume;
 
     return Scaffold(
       appBar: AppBar(

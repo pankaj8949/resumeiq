@@ -27,6 +27,7 @@ dependencies:
   firebase_auth: ^5.3.1
   cloud_firestore: ^5.4.4
   firebase_storage: ^12.3.4
+  firebase_ai: ^2.3.0
   google_sign_in: ^6.2.1
 
   # AI & API
@@ -63,6 +64,7 @@ dependencies:
 
   # Error Handling
   logger: ^2.4.0
+  flutter_to_pdf: ^0.4.1
 
 dev_dependencies:
   flutter_test:

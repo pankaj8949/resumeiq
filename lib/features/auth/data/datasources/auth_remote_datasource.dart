@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../../../core/errors/exceptions.dart';
+import '../../../resume_builder/domain/entities/resume_entity.dart';
 import '../models/user_model.dart';
 
 /// Remote data source for authentication
@@ -17,6 +18,17 @@ abstract class AuthRemoteDataSource {
   Future<UserEntity> updateProfile({
     String? displayName,
     String? photoUrl,
+    String? phone,
+    String? location,
+    String? linkedInUrl,
+    String? portfolioUrl,
+    String? githubUrl,
+    String? summary,
+    List<EducationEntity>? education,
+    List<ExperienceEntity>? experience,
+    List<String>? skills,
+    List<ProjectEntity>? projects,
+    List<CertificationEntity>? certifications,
   });
 
   Stream<UserEntity?> authStateChanges();
@@ -111,6 +123,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserEntity> updateProfile({
     String? displayName,
     String? photoUrl,
+    String? phone,
+    String? location,
+    String? linkedInUrl,
+    String? portfolioUrl,
+    String? githubUrl,
+    String? summary,
+    List<EducationEntity>? education,
+    List<ExperienceEntity>? experience,
+    List<String>? skills,
+    List<ProjectEntity>? projects,
+    List<CertificationEntity>? certifications,
   }) async {
     try {
       final user = _firebaseAuth.currentUser;
@@ -119,7 +142,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
 
       // Update Firebase Auth profile
-      await user.updateDisplayName(displayName);
+      if (displayName != null) {
+        await user.updateDisplayName(displayName);
+      }
       if (photoUrl != null) {
         await user.updatePhotoURL(photoUrl);
       }
@@ -134,6 +159,39 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
       if (photoUrl != null) {
         updateData['photoUrl'] = photoUrl;
+      }
+      if (phone != null) {
+        updateData['phone'] = phone;
+      }
+      if (location != null) {
+        updateData['location'] = location;
+      }
+      if (linkedInUrl != null) {
+        updateData['linkedInUrl'] = linkedInUrl;
+      }
+      if (portfolioUrl != null) {
+        updateData['portfolioUrl'] = portfolioUrl;
+      }
+      if (githubUrl != null) {
+        updateData['githubUrl'] = githubUrl;
+      }
+      if (summary != null) {
+        updateData['summary'] = summary;
+      }
+      if (education != null) {
+        updateData['education'] = education.map((e) => UserModel.educationToMap(e)).toList();
+      }
+      if (experience != null) {
+        updateData['experience'] = experience.map((e) => UserModel.experienceToMap(e)).toList();
+      }
+      if (skills != null) {
+        updateData['skills'] = skills;
+      }
+      if (projects != null) {
+        updateData['projects'] = projects.map((p) => UserModel.projectToMap(p)).toList();
+      }
+      if (certifications != null) {
+        updateData['certifications'] = certifications.map((c) => UserModel.certificationToMap(c)).toList();
       }
 
       await _firestore.collection('users').doc(user.uid).update(updateData);

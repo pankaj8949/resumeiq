@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/services/gemini_service.dart';
+import '../../../../shared/services/firebase_ai_service.dart';
 
-final interviewGeminiProvider = Provider<GeminiService?>((ref) {
-  // API key is handled by GeminiService constructor via GeminiConfig
+final interviewFirebaseAIProvider = Provider<FirebaseAIService?>((ref) {
+  // Firebase AI service uses Firebase authentication
   try {
-    return GeminiService();
+    return FirebaseAIService();
   } catch (e) {
     // Log the error but don't crash the app
-    // The service will be null if API key is not configured
+    // The service will be null if Firebase is not configured
     return null;
   }
 });
@@ -47,12 +47,12 @@ class _MockInterviewPageState extends ConsumerState<MockInterviewPage> {
     });
 
     try {
-      final geminiService = ref.read(interviewGeminiProvider);
-      if (geminiService == null) {
-        throw Exception('Gemini API key is not configured');
+      final firebaseAI = ref.read(interviewFirebaseAIProvider);
+      if (firebaseAI == null) {
+        throw Exception('Firebase AI is not configured');
       }
       
-      final greeting = await geminiService.generateText(
+      final greeting = await firebaseAI.generateText(
         prompt: '''
 You are conducting a ${_selectedInterviewType ?? 'Technical'} interview. Start with a friendly greeting and ask the first interview question. 
 Keep it conversational and professional. Ask ONE question at a time.
@@ -67,8 +67,8 @@ Keep it conversational and professional. Ask ONE question at a time.
     } catch (e) {
       setState(() {
         _messages.add(ChatMessage(
-          text: e.toString().contains('API key') 
-              ? '⚠️ Gemini API key is not configured. Please configure your API key in settings to use AI interview features.\n\nWelcome! I\'m your interview coach. Let\'s start: Tell me about yourself.'
+          text: e.toString().contains('Firebase') || e.toString().contains('not configured')
+              ? '⚠️ Firebase AI is not configured. Please ensure Firebase is properly set up to use AI interview features.\n\nWelcome! I\'m your interview coach. Let\'s start: Tell me about yourself.'
               : 'Welcome! I\'m your AI interview coach. Let\'s start with a question: Tell me about yourself.',
           isUser: false,
         ));
@@ -89,14 +89,14 @@ Keep it conversational and professional. Ask ONE question at a time.
     _scrollToBottom();
 
     try {
-      final geminiService = ref.read(interviewGeminiProvider);
-      if (geminiService == null) {
-        throw Exception('Gemini API key is not configured');
+      final firebaseAI = ref.read(interviewFirebaseAIProvider);
+      if (firebaseAI == null) {
+        throw Exception('Firebase AI is not configured');
       }
       
       final conversationHistory = _messages.map((m) => m.text).join('\n');
       
-      final response = await geminiService.generateText(
+      final response = await firebaseAI.generateText(
         prompt: '''
 You are conducting a ${_selectedInterviewType ?? 'Technical'} interview. 
 
@@ -109,7 +109,7 @@ Based on the candidate's response, provide:
 3. Keep it natural and conversational
 4. Ask ONE question at a time
 
-Type: ${_selectedInterviewType}
+Type: $_selectedInterviewType
 ''',
       );
 
@@ -121,8 +121,8 @@ Type: ${_selectedInterviewType}
     } catch (e) {
       setState(() {
         _messages.add(ChatMessage(
-          text: e.toString().contains('API key') 
-              ? '⚠️ Gemini API key is not configured. Please configure your API key to use AI interview features.'
+          text: e.toString().contains('Firebase') || e.toString().contains('not configured')
+              ? '⚠️ Firebase AI is not configured. Please ensure Firebase is properly set up to use AI interview features.'
               : 'I apologize, but I encountered an error. Could you please rephrase your answer?',
           isUser: false,
         ));

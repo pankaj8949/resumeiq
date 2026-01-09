@@ -3,7 +3,7 @@ class GeminiConstants {
   GeminiConstants._();
 
   /// ✅ Default FREE model (FAST & STABLE)
-  static const String defaultModel = 'gemini-1.5-flash';
+  static const String defaultModel = 'gemini-2.5-flash-lite';
 
   /// ✅ Flash model (same as default, free tier)
   static const String flashModel = 'gemini-1.5-flash';
@@ -11,7 +11,7 @@ class GeminiConstants {
   /// ✅ Fallback models (FREE ONLY)
   static const List<String> fallbackModels = [
     'gemini-1.5-flash', // Primary free model
-    'gemini-1.0-pro',   // Legacy free fallback
+    'gemini-1.0-pro', // Legacy free fallback
   ];
 
   /// Temperature presets

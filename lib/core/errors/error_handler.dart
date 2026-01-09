@@ -58,37 +58,37 @@ class ErrorHandler {
 
   static Failure _mapAppExceptionToFailure(AppException exception) {
     switch (exception.runtimeType) {
-      case ServerException:
+      case ServerException _:
         return ServerFailure(
           message: exception.message,
           code: exception.code,
         );
-      case NetworkException:
+      case NetworkException _:
         return NetworkFailure(
           message: exception.message,
           code: exception.code,
         );
-      case CacheException:
+      case CacheException _:
         return CacheFailure(
           message: exception.message,
           code: exception.code,
         );
-      case AuthException:
+      case AuthException _:
         return AuthFailure(
           message: exception.message,
           code: exception.code,
         );
-      case ValidationException:
+      case ValidationException _:
         return ValidationFailure(
           message: exception.message,
           code: exception.code,
         );
-      case ApiException:
+      case ApiException _:
         return ApiFailure(
           message: exception.message,
           code: exception.code,
         );
-      case FileException:
+      case FileException _:
         return FileFailure(
           message: exception.message,
           code: exception.code,
@@ -104,7 +104,7 @@ class ErrorHandler {
   /// Get user-friendly error message
   static String getErrorMessage(Failure failure) {
     switch (failure.runtimeType) {
-      case NetworkFailure:
+      case NetworkFailure _:
         return 'No internet connection. Please check your network.';
       case ServerFailure:
         return failure.message ?? 'Server error. Please try again later.';

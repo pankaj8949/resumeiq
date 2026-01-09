@@ -144,6 +144,43 @@ class Validators {
 
     return null;
   }
+
+  /// Name validation
+  static String? name(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Name is required';
+    }
+    if (value.trim().length < 2) {
+      return 'Name must be at least 2 characters';
+    }
+    return null;
+  }
+
+  /// Optional phone validation
+  static String? optionalPhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null; // Phone is optional
+    }
+    final phoneRegex = RegExp(r'^\+?[1-9]\d{1,14}$');
+    if (!phoneRegex.hasMatch(value.replaceAll(RegExp(r'[\s-]'), ''))) {
+      return 'Please enter a valid phone number';
+    }
+    return null;
+  }
+
+  /// Optional URL validation
+  static String? optionalUrl(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null; // URL is optional
+    }
+    final urlRegex = RegExp(
+      r'^https?://(?:[-\w.])+(?::[0-9]+)?(?:/(?:[\w/_.])*(?:\?(?:[\w&=%.])*)?(?:#(?:[\w.])*)?)?$',
+    );
+    if (!urlRegex.hasMatch(value.trim())) {
+      return 'Please enter a valid URL';
+    }
+    return null;
+  }
 }
 
 

@@ -1,22 +1,22 @@
-import '../../../../shared/services/gemini_service.dart';
+import '../../../../shared/services/firebase_ai_service.dart';
 import '../../../../shared/models/resume_score_model.dart';
 import '../../../../shared/models/resume_model.dart';
 
 /// Service for scoring resumes using AI
 class ResumeScoringService {
-  ResumeScoringService(this._geminiService);
+  ResumeScoringService(this._firebaseAI);
 
-  final GeminiService? _geminiService;
+  final FirebaseAIService? _firebaseAI;
 
   Future<ResumeScoreModel> scoreResume(ResumeModel resume, {String? jobDescription}) async {
     try {
-      if (_geminiService == null) {
-        throw Exception('Gemini API key is not configured. Please configure your API key to use resume scoring features.');
+      if (_firebaseAI == null) {
+        throw Exception('Firebase AI is not configured. Please ensure Firebase is properly set up to use resume scoring features.');
       }
       
       final prompt = _buildScoringPrompt(resume, jobDescription);
       
-      final response = await _geminiService.generateStructuredResponse(
+      final response = await _firebaseAI.generateStructuredResponse(
         prompt: prompt,
         jsonSchema: _getScoringJsonSchema(),
       );

@@ -3,6 +3,7 @@ import '../../domain/entities/user_entity.dart';
 import '../../domain/usecases/sign_in_usecase.dart';
 import '../../domain/usecases/sign_out_usecase.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../../resume_builder/domain/entities/resume_entity.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -83,6 +84,49 @@ class AuthNotifier extends StateNotifier<AuthState> {
       },
       (_) {
         state = const AuthState();
+        return true;
+      },
+    );
+  }
+
+  Future<bool> updateProfile({
+    String? displayName,
+    String? photoUrl,
+    String? phone,
+    String? location,
+    String? linkedInUrl,
+    String? portfolioUrl,
+    String? githubUrl,
+    String? summary,
+    List<EducationEntity>? education,
+    List<ExperienceEntity>? experience,
+    List<String>? skills,
+    List<ProjectEntity>? projects,
+    List<CertificationEntity>? certifications,
+  }) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    final result = await _repository.updateProfile(
+      displayName: displayName,
+      photoUrl: photoUrl,
+      phone: phone,
+      location: location,
+      linkedInUrl: linkedInUrl,
+      portfolioUrl: portfolioUrl,
+      githubUrl: githubUrl,
+      summary: summary,
+      education: education,
+      experience: experience,
+      skills: skills,
+      projects: projects,
+      certifications: certifications,
+    );
+    return result.fold(
+      (failure) {
+        state = state.copyWith(isLoading: false, error: failure.message);
+        return false;
+      },
+      (user) {
+        state = state.copyWith(user: user, isLoading: false);
         return true;
       },
     );

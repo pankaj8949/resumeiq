@@ -4,19 +4,19 @@ import '../../domain/repositories/resume_repository.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/errors/error_handler.dart';
 import '../../../../shared/models/resume_model.dart' as model;
-import '../../../../shared/services/gemini_service.dart';
+import '../../../../shared/services/firebase_ai_service.dart';
 import '../../../../shared/services/pdf_service.dart';
 import '../datasources/resume_remote_datasource.dart';
 
 class ResumeRepositoryImpl implements ResumeRepository {
   ResumeRepositoryImpl({
     required ResumeRemoteDataSource remoteDataSource,
-    GeminiService? geminiService,
+    FirebaseAIService? firebaseAIService,
   })  : _remoteDataSource = remoteDataSource,
-        _geminiService = geminiService;
+        _firebaseAIService = firebaseAIService;
 
   final ResumeRemoteDataSource _remoteDataSource;
-  final GeminiService? _geminiService;
+  final FirebaseAIService? _firebaseAIService;
 
   @override
   Future<Either<Failure, ResumeEntity>> createResume(ResumeEntity resume) async {
@@ -94,14 +94,14 @@ Requirements:
 - No personal pronouns
 ''';
 
-      if (_geminiService == null) {
+      if (_firebaseAIService == null) {
         return const Left(ApiFailure(
-          message: 'Gemini API key is not configured. Please configure your API key to use AI features.',
-          code: 'MISSING_API_KEY',
+          message: 'Firebase AI is not configured. Please ensure Firebase is properly set up to use AI features.',
+          code: 'MISSING_AI_SERVICE',
         ));
       }
       
-      final summary = await _geminiService.generateText(prompt: prompt);
+      final summary = await _firebaseAIService.generateText(prompt: prompt);
       return Right(summary.trim());
     } catch (e) {
       return Left(ErrorHandler.mapExceptionToFailure(e));

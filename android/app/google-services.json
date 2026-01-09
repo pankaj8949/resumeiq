@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "248801536056-krgs9sa7dkv3g3esf60098aj3omr7k9m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.redevs.resumeiq",
+            "certificate_hash": "1076c5896cbbaebc97d4aa619fdd266975f048ec"
+          }
+        },
+        {
           "client_id": "248801536056-l7pmc6419hq7ok66ub8ehmbk9tlmtij1.apps.googleusercontent.com",
           "client_type": 3
         }
