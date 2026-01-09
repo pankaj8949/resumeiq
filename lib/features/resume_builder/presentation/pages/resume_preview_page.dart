@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_to_pdf/flutter_to_pdf.dart';
-import 'package:printing/printing.dart';
-import 'package:pdf/pdf.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/date_utils.dart' as AppDateUtils;
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
 import '../providers/resume_provider.dart';
 import '../../domain/entities/resume_entity.dart';
+import '../templates/template_registry.dart';
+import '../pdf/resume_pdf_generator.dart';
 import 'resume_builder_page.dart';
 
 class ResumePreviewPage extends ConsumerStatefulWidget {
@@ -22,6 +21,7 @@ class ResumePreviewPage extends ConsumerStatefulWidget {
 
 class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
   bool _isGeneratingPdf = false;
+  String _selectedTemplateId = 'modern'; // Default template
   final ExportDelegate _exportDelegate = ExportDelegate(
     options: ExportOptions(
       pageFormatOptions: PageFormatOptions.a4(),
@@ -48,35 +48,10 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
     });
 
     try {
-      // Wait a bit for the widget tree to be ready
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      // Export to PDF document
-      final pdf = await _exportDelegate.exportToPdfDocument(_exportFrameId);
-      
-      if (!mounted) return;
-      
-      // Show share/print dialog
-      await Printing.layoutPdf(
-        onLayout: (PdfPageFormat format) async => await pdf.save(),
-      );
-      
-      if (!mounted) return;
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('PDF generated successfully!'),
-          backgroundColor: AppTheme.successColor,
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to generate PDF: ${e.toString()}'),
-          backgroundColor: AppTheme.errorColor,
-        ),
+      await ResumePdfGenerator.generatePdf(
+        exportDelegate: _exportDelegate,
+        context: context,
+        exportFrameId: _exportFrameId,
       );
     } finally {
       if (mounted) {
@@ -85,6 +60,25 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
         });
       }
     }
+  }
+
+  void _showTemplateSelector(ResumeEntity resume) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => _TemplateSelectorSheet(
+        currentTemplateId: _selectedTemplateId,
+        onTemplateSelected: (templateId) {
+          setState(() {
+            _selectedTemplateId = templateId;
+          });
+          Navigator.pop(context);
+        },
+      ),
+    );
   }
 
   @override
@@ -149,6 +143,11 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
         title: Text(displayResume.title),
         actions: [
           IconButton(
+            icon: const Icon(Icons.style),
+            tooltip: 'Select Template',
+            onPressed: () => _showTemplateSelector(displayResume),
+          ),
+          IconButton(
             icon: const Icon(Icons.edit),
             tooltip: 'Edit Resume',
             onPressed: () {
@@ -201,7 +200,7 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
                     labelSmall: Theme.of(context).textTheme.labelSmall?.copyWith(fontFamily: null),
                   ),
                 ),
-                child: _buildResumeContent(displayResume),
+                child: _buildTemplatePreview(displayResume),
               );
             },
           ),
@@ -210,386 +209,175 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
     );
   }
 
-  Widget _buildResumeContent(ResumeEntity resume) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header Section
-        _buildHeaderSection(resume),
-        const SizedBox(height: 32),
-        
-        // Summary Section
-        if (resume.summary != null && resume.summary!.isNotEmpty) ...[
-          _buildSectionTitle('Professional Summary'),
-          const SizedBox(height: 12),
-          _buildSectionContent(resume.summary!),
-          const SizedBox(height: 32),
-        ],
-        
-        // Experience Section
-        if (resume.experience.isNotEmpty) ...[
-          _buildSectionTitle('Experience'),
-          const SizedBox(height: 12),
-          ...resume.experience.map((exp) => _buildExperienceItem(exp)),
-          const SizedBox(height: 32),
-        ],
-        
-        // Education Section
-        if (resume.education.isNotEmpty) ...[
-          _buildSectionTitle('Education'),
-          const SizedBox(height: 12),
-          ...resume.education.map((edu) => _buildEducationItem(edu)),
-          const SizedBox(height: 32),
-        ],
-        
-        // Skills Section
-        if (resume.skills.isNotEmpty) ...[
-          _buildSectionTitle('Skills'),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: resume.skills.map((skill) => Chip(
-              label: Text(skill),
-              backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-            )).toList(),
+  Widget _buildTemplatePreview(ResumeEntity resume) {
+    final templateInfo = TemplateRegistry.getTemplateById(_selectedTemplateId) ??
+        TemplateRegistry.getDefaultTemplate();
+    return templateInfo.factory(resume);
+  }
+
+}
+
+/// Template selector bottom sheet
+class _TemplateSelectorSheet extends StatelessWidget {
+  const _TemplateSelectorSheet({
+    required this.currentTemplateId,
+    required this.onTemplateSelected,
+  });
+
+  final String currentTemplateId;
+  final ValueChanged<String> onTemplateSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final categories = TemplateRegistry.getCategories();
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.9,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          const SizedBox(height: 32),
-        ],
-        
-        // Projects Section
-        if (resume.projects.isNotEmpty) ...[
-          _buildSectionTitle('Projects'),
-          const SizedBox(height: 12),
-          ...resume.projects.map((project) => _buildProjectItem(project)),
-          const SizedBox(height: 32),
-        ],
-        
-        // Certifications Section
-        if (resume.certifications.isNotEmpty) ...[
-          _buildSectionTitle('Certifications'),
-          const SizedBox(height: 12),
-          ...resume.certifications.map((cert) => _buildCertificationItem(cert)),
-          const SizedBox(height: 32),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildHeaderSection(ResumeEntity resume) {
-    final personalInfo = resume.personalInfo;
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              personalInfo?.fullName ?? 'Your Name',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryColor,
-                  ),
-            ),
-            const SizedBox(height: 12),
-            if (personalInfo?.email != null)
-              _buildContactInfo(Icons.email, personalInfo!.email!),
-            if (personalInfo?.phone != null)
-              _buildContactInfo(Icons.phone, personalInfo!.phone!),
-            if (personalInfo?.location != null)
-              _buildContactInfo(Icons.location_on, personalInfo!.location!),
-            if (personalInfo?.linkedInUrl != null)
-              _buildContactInfo(Icons.link, personalInfo!.linkedInUrl!),
-            if (personalInfo?.githubUrl != null)
-              _buildContactInfo(Icons.code, personalInfo!.githubUrl!),
-            if (personalInfo?.portfolioUrl != null)
-              _buildContactInfo(Icons.web, personalInfo!.portfolioUrl!),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContactInfo(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4.0),
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: AppTheme.textSecondary),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppTheme.primaryColor,
-          ),
-    );
-  }
-
-  Widget _buildSectionContent(String content) {
-    return Text(
-      content,
-      style: Theme.of(context).textTheme.bodyLarge,
-    );
-  }
-
-  Widget _buildExperienceItem(ExperienceEntity experience) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        experience.position,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      Text(
-                        experience.company,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppTheme.textSecondary,
-                            ),
-                      ),
-                    ],
-                  ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                if (experience.startDate != null || experience.endDate != null)
-                  Text(
-                    _formatDateRange(experience.startDate, experience.endDate, experience.isCurrentRole ?? false),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-              ],
-            ),
-            if (experience.location != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                experience.location!,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.textSecondary,
-                    ),
               ),
-            ],
-            if (experience.responsibilities.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              ...experience.responsibilities.map((responsibility) => Padding(
-                    padding: const EdgeInsets.only(bottom: 4.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('• ', style: TextStyle(fontSize: 16)),
-                        Expanded(
-                          child: Text(
-                            responsibility,
-                            style: Theme.of(context).textTheme.bodyMedium,
+              // Title
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Select Template',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
-                        ),
-                      ],
                     ),
-                  )),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEducationItem(EducationEntity education) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    education.degree,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  Text(
-                    education.institution,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppTheme.textSecondary,
-                        ),
-                  ),
-                  if (education.fieldOfStudy != null)
-                    Text(
-                      education.fieldOfStudy!,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  if (education.gpa != null)
-                    Text(
-                      'GPA: ${education.gpa}',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  if (education.description != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      education.description!,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
                     ),
                   ],
-                ],
-              ),
-            ),
-            if (education.startDate != null || education.endDate != null)
-              Text(
-                _formatDateRange(education.startDate, education.endDate, false),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProjectItem(ProjectEntity project) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    project.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ),
-                if (project.startDate != null || project.endDate != null)
-                  Text(
-                    _formatDateRange(project.startDate, project.endDate, false),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-              ],
-            ),
-            if (project.description != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                project.description!,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
-            if (project.technologies != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Technologies: ${project.technologies!}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.textSecondary,
-                    ),
-              ),
-            ],
-            if (project.url != null) ...[
-              const SizedBox(height: 8),
-              InkWell(
-                onTap: () {
-                  // TODO: Open URL
-                },
-                child: Text(
-                  project.url!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.primaryColor,
-                        decoration: TextDecoration.underline,
-                      ),
                 ),
               ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
+              const Divider(),
+              // Template list grouped by category
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: categories.length,
+                  itemBuilder: (context, categoryIndex) {
+                    final category = categories[categoryIndex];
+                    final templates = TemplateRegistry.getTemplatesByCategory(category);
 
-  Widget _buildCertificationItem(CertificationEntity certification) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    certification.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  if (certification.issuer != null)
-                    Text(
-                      certification.issuer!,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppTheme.textSecondary,
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                          child: Text(
+                            category,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.primaryColor,
+                                ),
                           ),
-                    ),
-                  if (certification.credentialId != null)
-                    Text(
-                      'Credential ID: ${certification.credentialId!}',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                ],
-              ),
-            ),
-            if (certification.issueDate != null)
-              Text(
-                AppDateUtils.DateUtils.formatDate(certification.issueDate!, format: 'MMM yyyy'),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
+                        ),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 1.1,
+                          ),
+                          itemCount: templates.length,
+                          itemBuilder: (context, index) {
+                            final template = templates[index];
+                            final isSelected = template.id == currentTemplateId;
 
-  String _formatDateRange(DateTime? startDate, DateTime? endDate, bool isCurrent) {
-    final start = startDate != null
-        ? AppDateUtils.DateUtils.formatDate(startDate, format: 'MMM yyyy')
-        : '';
-    final end = isCurrent
-        ? 'Present'
-        : (endDate != null
-            ? AppDateUtils.DateUtils.formatDate(endDate, format: 'MMM yyyy')
-            : '');
-    
-    if (start.isEmpty && end.isEmpty) return '';
-    if (start.isEmpty) return end;
-    if (end.isEmpty) return start;
-    return '$start - $end';
+                            return InkWell(
+                              onTap: () => onTemplateSelected(template.id),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? AppTheme.primaryColor
+                                        : Colors.grey.shade300,
+                                    width: isSelected ? 2 : 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: isSelected
+                                      ? AppTheme.primaryColor.withOpacity(0.05)
+                                      : Colors.white,
+                                ),
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      isSelected ? Icons.check_circle : Icons.style,
+                                      color: isSelected
+                                          ? AppTheme.primaryColor
+                                          : Colors.grey.shade600,
+                                      size: 32,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      template.name,
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color: isSelected
+                                                ? AppTheme.primaryColor
+                                                : Colors.black87,
+                                          ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      template.description,
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: Colors.grey.shade600,
+                                          ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        if (categoryIndex < categories.length - 1)
+                          const SizedBox(height: 24),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
