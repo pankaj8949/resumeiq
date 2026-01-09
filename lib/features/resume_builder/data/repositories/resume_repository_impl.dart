@@ -5,7 +5,6 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/errors/error_handler.dart';
 import '../../../../shared/models/resume_model.dart' as model;
 import '../../../../shared/services/firebase_ai_service.dart';
-import '../../../../shared/services/pdf_service.dart';
 import '../datasources/resume_remote_datasource.dart';
 
 class ResumeRepositoryImpl implements ResumeRepository {
@@ -110,13 +109,12 @@ Requirements:
 
   @override
   Future<Either<Failure, String>> generatePDF(ResumeEntity resume) async {
-    try {
-      final pdfService = PdfService();
-      final filePath = await pdfService.savePdf(resume);
-      return Right(filePath);
-    } catch (e) {
-      return Left(ErrorHandler.mapExceptionToFailure(e));
-    }
+    // PDF generation is now handled directly in the UI using flutter_to_pdf
+    // This method is kept for interface compatibility but is not used
+    return const Left(ApiFailure(
+      message: 'PDF generation should be handled in the UI layer using flutter_to_pdf',
+      code: 'USE_UI_EXPORT',
+    ));
   }
 
   model.ResumeModel _entityToModel(ResumeEntity entity) {

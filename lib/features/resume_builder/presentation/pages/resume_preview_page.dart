@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_to_pdf/flutter_to_pdf.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_utils.dart' as AppDateUtils;
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
-import '../../../../shared/services/pdf_service.dart';
 import '../providers/resume_provider.dart';
 import '../../domain/entities/resume_entity.dart';
 import 'resume_builder_page.dart';
@@ -20,6 +22,14 @@ class ResumePreviewPage extends ConsumerStatefulWidget {
 
 class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
   bool _isGeneratingPdf = false;
+  final ExportDelegate _exportDelegate = ExportDelegate(
+    options: ExportOptions(
+      pageFormatOptions: PageFormatOptions.a4(),
+    ),
+    // Note: We don't provide ttfFonts here to use default fonts for PDF
+    // This avoids the "unsupported font" error with Google Fonts
+  );
+  static const String _exportFrameId = 'resume_export_frame';
 
   @override
   void initState() {
@@ -38,10 +48,18 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
     });
 
     try {
-      final pdfService = PdfService();
+      // Wait a bit for the widget tree to be ready
+      await Future.delayed(const Duration(milliseconds: 500));
       
-      // Show share dialog
-      await pdfService.sharePdf(resume);
+      // Export to PDF document
+      final pdf = await _exportDelegate.exportToPdfDocument(_exportFrameId);
+      
+      if (!mounted) return;
+      
+      // Show share/print dialog
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => await pdf.save(),
+      );
       
       if (!mounted) return;
       
@@ -156,70 +174,105 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Section
-            _buildHeaderSection(displayResume),
-            const SizedBox(height: 32),
-            
-            // Summary Section
-            if (displayResume.summary != null && displayResume.summary!.isNotEmpty) ...[
-              _buildSectionTitle('Professional Summary'),
-              const SizedBox(height: 12),
-              _buildSectionContent(displayResume.summary!),
-              const SizedBox(height: 32),
-            ],
-            
-            // Experience Section
-            if (displayResume.experience.isNotEmpty) ...[
-              _buildSectionTitle('Experience'),
-              const SizedBox(height: 12),
-              ...displayResume.experience.map((exp) => _buildExperienceItem(exp)),
-              const SizedBox(height: 32),
-            ],
-            
-            // Education Section
-            if (displayResume.education.isNotEmpty) ...[
-              _buildSectionTitle('Education'),
-              const SizedBox(height: 12),
-              ...displayResume.education.map((edu) => _buildEducationItem(edu)),
-              const SizedBox(height: 32),
-            ],
-            
-            // Skills Section
-            if (displayResume.skills.isNotEmpty) ...[
-              _buildSectionTitle('Skills'),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: displayResume.skills.map((skill) => Chip(
-                  label: Text(skill),
-                  backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                )).toList(),
-              ),
-              const SizedBox(height: 32),
-            ],
-            
-            // Projects Section
-            if (displayResume.projects.isNotEmpty) ...[
-              _buildSectionTitle('Projects'),
-              const SizedBox(height: 12),
-              ...displayResume.projects.map((project) => _buildProjectItem(project)),
-              const SizedBox(height: 32),
-            ],
-            
-            // Certifications Section
-            if (displayResume.certifications.isNotEmpty) ...[
-              _buildSectionTitle('Certifications'),
-              const SizedBox(height: 12),
-              ...displayResume.certifications.map((cert) => _buildCertificationItem(cert)),
-              const SizedBox(height: 32),
-            ],
-          ],
+        child: ExportFrame(
+          frameId: _exportFrameId,
+          exportDelegate: _exportDelegate,
+          child: Builder(
+            builder: (context) {
+              // Override theme to use system fonts for PDF export
+              // This avoids "unsupported font" error with Google Fonts
+              return Theme(
+                data: Theme.of(context).copyWith(
+                  textTheme: Theme.of(context).textTheme.copyWith(
+                    displayLarge: Theme.of(context).textTheme.displayLarge?.copyWith(fontFamily: null),
+                    displayMedium: Theme.of(context).textTheme.displayMedium?.copyWith(fontFamily: null),
+                    displaySmall: Theme.of(context).textTheme.displaySmall?.copyWith(fontFamily: null),
+                    headlineLarge: Theme.of(context).textTheme.headlineLarge?.copyWith(fontFamily: null),
+                    headlineMedium: Theme.of(context).textTheme.headlineMedium?.copyWith(fontFamily: null),
+                    headlineSmall: Theme.of(context).textTheme.headlineSmall?.copyWith(fontFamily: null),
+                    titleLarge: Theme.of(context).textTheme.titleLarge?.copyWith(fontFamily: null),
+                    titleMedium: Theme.of(context).textTheme.titleMedium?.copyWith(fontFamily: null),
+                    titleSmall: Theme.of(context).textTheme.titleSmall?.copyWith(fontFamily: null),
+                    bodyLarge: Theme.of(context).textTheme.bodyLarge?.copyWith(fontFamily: null),
+                    bodyMedium: Theme.of(context).textTheme.bodyMedium?.copyWith(fontFamily: null),
+                    bodySmall: Theme.of(context).textTheme.bodySmall?.copyWith(fontFamily: null),
+                    labelLarge: Theme.of(context).textTheme.labelLarge?.copyWith(fontFamily: null),
+                    labelMedium: Theme.of(context).textTheme.labelMedium?.copyWith(fontFamily: null),
+                    labelSmall: Theme.of(context).textTheme.labelSmall?.copyWith(fontFamily: null),
+                  ),
+                ),
+                child: _buildResumeContent(displayResume),
+              );
+            },
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildResumeContent(ResumeEntity resume) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header Section
+        _buildHeaderSection(resume),
+        const SizedBox(height: 32),
+        
+        // Summary Section
+        if (resume.summary != null && resume.summary!.isNotEmpty) ...[
+          _buildSectionTitle('Professional Summary'),
+          const SizedBox(height: 12),
+          _buildSectionContent(resume.summary!),
+          const SizedBox(height: 32),
+        ],
+        
+        // Experience Section
+        if (resume.experience.isNotEmpty) ...[
+          _buildSectionTitle('Experience'),
+          const SizedBox(height: 12),
+          ...resume.experience.map((exp) => _buildExperienceItem(exp)),
+          const SizedBox(height: 32),
+        ],
+        
+        // Education Section
+        if (resume.education.isNotEmpty) ...[
+          _buildSectionTitle('Education'),
+          const SizedBox(height: 12),
+          ...resume.education.map((edu) => _buildEducationItem(edu)),
+          const SizedBox(height: 32),
+        ],
+        
+        // Skills Section
+        if (resume.skills.isNotEmpty) ...[
+          _buildSectionTitle('Skills'),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: resume.skills.map((skill) => Chip(
+              label: Text(skill),
+              backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+            )).toList(),
+          ),
+          const SizedBox(height: 32),
+        ],
+        
+        // Projects Section
+        if (resume.projects.isNotEmpty) ...[
+          _buildSectionTitle('Projects'),
+          const SizedBox(height: 12),
+          ...resume.projects.map((project) => _buildProjectItem(project)),
+          const SizedBox(height: 32),
+        ],
+        
+        // Certifications Section
+        if (resume.certifications.isNotEmpty) ...[
+          _buildSectionTitle('Certifications'),
+          const SizedBox(height: 12),
+          ...resume.certifications.map((cert) => _buildCertificationItem(cert)),
+          const SizedBox(height: 32),
+        ],
+      ],
     );
   }
 

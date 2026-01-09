@@ -4,6 +4,7 @@ import 'core/config/firebase_config.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/auth/presentation/pages/login_page.dart';
+import 'features/auth/presentation/pages/profile_setup_page.dart';
 import 'features/dashboard/presentation/pages/main_navigation_page.dart';
 import 'features/dashboard/presentation/pages/splash_page.dart';
 
@@ -38,6 +39,15 @@ class ResumeIQApp extends StatelessWidget {
 class AuthWrapper extends ConsumerWidget {
   const AuthWrapper({super.key});
 
+  bool _isProfileComplete(user) {
+    return user.displayName != null &&
+        user.displayName!.isNotEmpty &&
+        user.phone != null &&
+        user.phone!.isNotEmpty &&
+        user.location != null &&
+        user.location!.isNotEmpty;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authNotifierProvider);
@@ -48,6 +58,11 @@ class AuthWrapper extends ConsumerWidget {
 
     if (authState.user == null) {
       return const LoginPage();
+    }
+
+    // Check if profile is complete
+    if (!_isProfileComplete(authState.user!)) {
+      return const ProfileSetupPage();
     }
 
     return const MainNavigationPage();

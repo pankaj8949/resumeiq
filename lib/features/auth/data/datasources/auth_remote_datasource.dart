@@ -50,7 +50,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserEntity> signInWithGoogle() async {
     try {
-      // Trigger the authentication flow
+      // Sign out from Google Sign-In first to force account picker to show
+      // This doesn't sign out from Firebase Auth, just clears Google Sign-In cache
+      await _googleSignIn.signOut();
+      
+      // Trigger the authentication flow - this will now show account picker
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
