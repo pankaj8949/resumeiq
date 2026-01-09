@@ -349,44 +349,66 @@ class _ResumeBuilderPageState extends ConsumerState<ResumeBuilderPage> {
       return;
     }
 
-    // Just populate the form fields with profile data - don't save
-    setState(() {
-      // Populate title
-      _titleController.text = '${user.displayName ?? 'My'} Resume';
-      
-      // Populate personal info
-      _fullNameController.text = user.displayName ?? '';
-      _emailController.text = user.email;
-      _phoneController.text = user.phone ?? '';
-      _locationController.text = user.location ?? '';
-      _linkedInController.text = user.linkedInUrl ?? '';
-      _portfolioController.text = user.portfolioUrl ?? '';
-      _githubController.text = user.githubUrl ?? '';
-      
-      // Populate summary
-      _summaryController.text = user.summary ?? '';
-      
-      // Populate lists
-      _educationList.clear();
-      _educationList.addAll(user.education);
-      
-      _experienceList.clear();
-      _experienceList.addAll(user.experience);
-      
-      _skillsList.clear();
-      _skillsList.addAll(user.skills);
-      
-      _projectsList.clear();
-      _projectsList.addAll(user.projects);
-      
-      _certificationsList.clear();
-      _certificationsList.addAll(user.certifications);
-    });
-    
-    // Move to first step to show the populated data
-    setState(() {
-      _currentStep = 0;
-    });
+    // Create resume from profile data
+    final personalInfo = PersonalInfoEntity(
+      fullName: user.displayName ?? '',
+      email: user.email,
+      phone: user.phone,
+      location: user.location,
+      linkedInUrl: user.linkedInUrl,
+      portfolioUrl: user.portfolioUrl,
+      githubUrl: user.githubUrl,
+    );
+
+    final resume = ResumeEntity(
+      id: '',
+      userId: user.id,
+      title: '${user.displayName ?? 'My'} Resume',
+      personalInfo: personalInfo,
+      summary: user.summary,
+      education: user.education,
+      experience: user.experience,
+      skills: user.skills,
+      projects: user.projects,
+      certifications: user.certifications,
+      theme: widget.templateId ?? 'modern',
+    );
+
+    // Create the resume
+    final success = await ref
+        .read(resumeNotifierProvider.notifier)
+        .createResume(resume);
+
+    if (!mounted) return;
+
+    if (success) {
+      final savedResume = ref.read(resumeNotifierProvider).currentResume;
+      final resumeIdToShow = savedResume?.id;
+
+      if (mounted && resumeIdToShow != null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => ResumePreviewPage(resumeId: resumeIdToShow),
+          ),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Resume created from your profile!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } else {
+      if (mounted) {
+        final error = ref.read(resumeNotifierProvider).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? 'Failed to create resume'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
