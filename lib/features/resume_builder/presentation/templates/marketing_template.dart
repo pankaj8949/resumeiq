@@ -21,6 +21,7 @@ class MarketingTemplate extends StatelessWidget {
     return Container(
       color: Colors.white,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(

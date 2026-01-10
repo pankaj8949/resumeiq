@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_to_pdf/flutter_to_pdf.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
 import '../providers/resume_provider.dart';
 import '../../domain/entities/resume_entity.dart';
 import '../templates/template_registry.dart';
+import '../templates/html_template_service.dart';
 import '../pdf/resume_pdf_generator.dart';
 import 'resume_builder_page.dart';
 
@@ -22,15 +23,7 @@ class ResumePreviewPage extends ConsumerStatefulWidget {
 class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
   bool _isGeneratingPdf = false;
   String _selectedTemplateId = 'modern'; // Default template
-  final ExportDelegate _exportDelegate = ExportDelegate(
-    options: ExportOptions(
-      pageFormatOptions: PageFormatOptions.a4(),
-    ),
-    // Note: We don't provide ttfFonts here to use default fonts for PDF
-    // This avoids the "unsupported font" error with Google Fonts
-  );
-  static const String _exportFrameId = 'resume_export_frame';
-
+  
   @override
   void initState() {
     super.initState();
@@ -49,9 +42,9 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
 
     try {
       await ResumePdfGenerator.generatePdf(
-        exportDelegate: _exportDelegate,
+        resume: resume,
         context: context,
-        exportFrameId: _exportFrameId,
+        templateId: _selectedTemplateId,
       );
     } finally {
       if (mounted) {
@@ -171,49 +164,58 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: ExportFrame(
-          frameId: _exportFrameId,
-          exportDelegate: _exportDelegate,
-          child: Builder(
-            builder: (context) {
-              // Override theme to use system fonts for PDF export
-              // This avoids "unsupported font" error with Google Fonts
-              return Theme(
-                data: Theme.of(context).copyWith(
-                  textTheme: Theme.of(context).textTheme.copyWith(
-                    displayLarge: Theme.of(context).textTheme.displayLarge?.copyWith(fontFamily: null),
-                    displayMedium: Theme.of(context).textTheme.displayMedium?.copyWith(fontFamily: null),
-                    displaySmall: Theme.of(context).textTheme.displaySmall?.copyWith(fontFamily: null),
-                    headlineLarge: Theme.of(context).textTheme.headlineLarge?.copyWith(fontFamily: null),
-                    headlineMedium: Theme.of(context).textTheme.headlineMedium?.copyWith(fontFamily: null),
-                    headlineSmall: Theme.of(context).textTheme.headlineSmall?.copyWith(fontFamily: null),
-                    titleLarge: Theme.of(context).textTheme.titleLarge?.copyWith(fontFamily: null),
-                    titleMedium: Theme.of(context).textTheme.titleMedium?.copyWith(fontFamily: null),
-                    titleSmall: Theme.of(context).textTheme.titleSmall?.copyWith(fontFamily: null),
-                    bodyLarge: Theme.of(context).textTheme.bodyLarge?.copyWith(fontFamily: null),
-                    bodyMedium: Theme.of(context).textTheme.bodyMedium?.copyWith(fontFamily: null),
-                    bodySmall: Theme.of(context).textTheme.bodySmall?.copyWith(fontFamily: null),
-                    labelLarge: Theme.of(context).textTheme.labelLarge?.copyWith(fontFamily: null),
-                    labelMedium: Theme.of(context).textTheme.labelMedium?.copyWith(fontFamily: null),
-                    labelSmall: Theme.of(context).textTheme.labelSmall?.copyWith(fontFamily: null),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Calculate A4 aspect ratio and scale to fit available space
+          const a4AspectRatio = 842.0 / 595.0; // Height / Width
+          final maxWidth = constraints.maxWidth - 32; // Padding
+          final maxHeight = constraints.maxHeight - 32;
+          
+          // Calculate preview dimensions maintaining A4 aspect ratio
+          double previewWidth = maxWidth;
+          double previewHeight = previewWidth * a4AspectRatio;
+          
+          if (previewHeight > maxHeight) {
+            previewHeight = maxHeight;
+            previewWidth = previewHeight / a4AspectRatio;
+          }
+          
+          // Generate HTML content for preview
+          final htmlContent = HtmlTemplateService.generateHtml(
+            resume: displayResume,
+            templateId: _selectedTemplateId,
+          );
+          
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: Container(
+                width: previewWidth,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: HtmlWidget(
+                    htmlContent,
+                    textStyle: const TextStyle(fontSize: 11),
                   ),
                 ),
-                child: _buildTemplatePreview(displayResume),
-              );
-            },
-          ),
-        ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildTemplatePreview(ResumeEntity resume) {
-    final templateInfo = TemplateRegistry.getTemplateById(_selectedTemplateId) ??
-        TemplateRegistry.getDefaultTemplate();
-    return templateInfo.factory(resume);
-  }
 
 }
 
@@ -324,7 +326,7 @@ class _TemplateSelectorSheet extends StatelessWidget {
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                   color: isSelected
-                                      ? AppTheme.primaryColor.withOpacity(0.05)
+                                      ? AppTheme.primaryColor.withValues(alpha: 0.05)
                                       : Colors.white,
                                 ),
                                 padding: const EdgeInsets.all(12),

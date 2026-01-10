@@ -30,6 +30,7 @@ class ResumeHeader extends StatelessWidget {
     final defaultAccentColor = accentColor ?? Theme.of(context).colorScheme.primary;
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: alignment == TextAlign.center
           ? CrossAxisAlignment.center
           : alignment == TextAlign.right
@@ -43,6 +44,7 @@ class ResumeHeader extends StatelessWidget {
             fontWeight: fontWeight,
             color: defaultTextColor,
             letterSpacing: 0.5,
+            // fontFamily handled by DefaultTextStyle in PDF export context
           ),
           textAlign: alignment,
         ),
@@ -104,6 +106,7 @@ class ResumeHeader extends StatelessWidget {
       style: TextStyle(
         fontSize: 12,
         color: color,
+        // fontFamily handled by DefaultTextStyle in PDF export context
       ),
     );
   }

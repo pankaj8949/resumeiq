@@ -34,6 +34,7 @@ class SkillsSection extends StatelessWidget {
         return _buildColumnLayout(context);
       case SkillsDisplayStyle.bullets:
         return Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: skills
               .map(
@@ -83,6 +84,7 @@ class SkillsSection extends StatelessWidget {
 
         return Expanded(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: columnSkills
                 .map(

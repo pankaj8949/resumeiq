@@ -24,6 +24,7 @@ class EducationSection extends StatelessWidget {
     }
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: education
           .map((edu) => _EducationItem(
@@ -66,6 +67,7 @@ class _EducationItem extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: itemSpacing),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -74,6 +76,7 @@ class _EducationItem extends StatelessWidget {
             children: [
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(

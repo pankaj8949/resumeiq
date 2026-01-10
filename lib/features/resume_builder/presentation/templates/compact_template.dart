@@ -21,6 +21,7 @@ class CompactTemplate extends StatelessWidget {
       padding: const EdgeInsets.all(24.0),
       color: Colors.white,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ResumeHeader(

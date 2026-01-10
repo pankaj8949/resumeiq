@@ -24,6 +24,7 @@ class ExperienceSection extends StatelessWidget {
     }
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: experience
           .map((exp) => _ExperienceItem(
@@ -65,6 +66,7 @@ class _ExperienceItem extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: itemSpacing),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -73,12 +75,14 @@ class _ExperienceItem extends StatelessWidget {
             children: [
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       experience.position,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
+                            // fontFamily handled by DefaultTextStyle in PDF export context
                           ),
                     ),
                     const SizedBox(height: 2),
@@ -86,6 +90,7 @@ class _ExperienceItem extends StatelessWidget {
                       experience.company,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w500,
+                            // fontFamily handled by DefaultTextStyle in PDF export context
                           ),
                     ),
                   ],
@@ -100,6 +105,7 @@ class _ExperienceItem extends StatelessWidget {
                   ),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                        // fontFamily handled by DefaultTextStyle in PDF export context
                       ),
                   textAlign: TextAlign.right,
                 ),
@@ -111,6 +117,7 @@ class _ExperienceItem extends StatelessWidget {
               experience.location!,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    // fontFamily handled by DefaultTextStyle in PDF export context
                   ),
             ),
           ],
@@ -130,7 +137,9 @@ class _ExperienceItem extends StatelessWidget {
                         padding: const EdgeInsets.only(right: 8.0, top: 4.0),
                         child: Text(
                           bulletStyle,
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                // fontFamily handled by DefaultTextStyle in PDF export context
+                              ),
                         ),
                       ),
                     Expanded(

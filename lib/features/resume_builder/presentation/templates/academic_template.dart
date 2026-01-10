@@ -21,6 +21,7 @@ class AcademicTemplate extends StatelessWidget {
       padding: const EdgeInsets.all(36.0),
       color: Colors.white,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ResumeHeader(

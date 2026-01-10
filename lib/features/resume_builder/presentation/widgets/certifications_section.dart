@@ -24,6 +24,7 @@ class CertificationsSection extends StatelessWidget {
     }
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: certifications
           .map((cert) => _CertificationItem(
@@ -60,6 +61,7 @@ class _CertificationItem extends StatelessWidget {
         children: [
           Expanded(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(

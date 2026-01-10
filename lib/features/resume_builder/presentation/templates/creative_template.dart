@@ -21,6 +21,7 @@ class CreativeTemplate extends StatelessWidget {
     return Container(
       color: Colors.white,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Colored header section

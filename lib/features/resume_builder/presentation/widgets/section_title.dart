@@ -30,11 +30,13 @@ class SectionTitle extends StatelessWidget {
         fontWeight: fontWeight,
         color: defaultColor,
         letterSpacing: 1.2,
+        // fontFamily handled by DefaultTextStyle in PDF export context
       ),
     );
 
     if (underline) {
       titleWidget = Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           titleWidget,

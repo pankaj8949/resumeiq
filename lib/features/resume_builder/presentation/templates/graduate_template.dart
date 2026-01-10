@@ -21,6 +21,7 @@ class GraduateTemplate extends StatelessWidget {
       padding: const EdgeInsets.all(32.0),
       color: Colors.white,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ResumeHeader(

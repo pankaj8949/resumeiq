@@ -24,6 +24,7 @@ class ProjectsSection extends StatelessWidget {
     }
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: projects
           .map((project) => _ProjectItem(
@@ -66,6 +67,7 @@ class _ProjectItem extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: itemSpacing),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
