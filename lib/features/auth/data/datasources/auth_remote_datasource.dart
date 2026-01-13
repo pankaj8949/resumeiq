@@ -2,10 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:resumeiq/models/user_model.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../resume_builder/domain/entities/resume_entity.dart';
-import '../models/user_model.dart';
 
 /// Remote data source for authentication
 abstract class AuthRemoteDataSource {
@@ -39,9 +39,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required FirebaseAuth firebaseAuth,
     required FirebaseFirestore firestore,
     required GoogleSignIn googleSignIn,
-  })  : _firebaseAuth = firebaseAuth,
-        _firestore = firestore,
-        _googleSignIn = googleSignIn;
+  }) : _firebaseAuth = firebaseAuth,
+       _firestore = firestore,
+       _googleSignIn = googleSignIn;
 
   final FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _firestore;
@@ -53,7 +53,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       // Sign out from Google Sign-In first to force account picker to show
       // This doesn't sign out from Firebase Auth, just clears Google Sign-In cache
       await _googleSignIn.signOut();
-      
+
       // Trigger the authentication flow - this will now show account picker
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
@@ -66,7 +66,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
 
       // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       // Create a new credential
       final credential = GoogleAuthProvider.credential(
@@ -75,7 +76,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       // Sign in to Firebase with the Google credential
-      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      final userCredential = await _firebaseAuth.signInWithCredential(
+        credential,
+      );
 
       if (userCredential.user == null) {
         throw AuthException(message: 'Sign in failed', code: 'SIGN_IN_FAILED');
@@ -90,7 +93,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         code: e.code,
       );
     } on FirebaseAuthException catch (e) {
-      throw AuthException(message: e.message ?? 'Authentication failed', code: e.code);
+      throw AuthException(
+        message: e.message ?? 'Authentication failed',
+        code: e.code,
+      );
     } on AuthException {
       rethrow;
     } catch (e) {
@@ -101,10 +107,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
-      await Future.wait([
-        _firebaseAuth.signOut(),
-        _googleSignIn.signOut(),
-      ]);
+      await Future.wait([_firebaseAuth.signOut(), _googleSignIn.signOut()]);
     } catch (e) {
       throw AuthException(message: 'Sign out failed', code: 'SIGN_OUT_FAILED');
     }
@@ -118,10 +121,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       return await _getUserFromFirestore(user.uid);
     } catch (e) {
-      throw AuthException(message: 'Failed to get current user', code: 'GET_USER_FAILED');
+      throw AuthException(
+        message: 'Failed to get current user',
+        code: 'GET_USER_FAILED',
+      );
     }
   }
-
 
   @override
   Future<UserEntity> updateProfile({
@@ -155,9 +160,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await user.reload();
 
       // Update Firestore
-      final updateData = <String, dynamic>{
-        'updatedAt': Timestamp.now(),
-      };
+      final updateData = <String, dynamic>{'updatedAt': Timestamp.now()};
       if (displayName != null) {
         updateData['displayName'] = displayName;
       }
@@ -183,26 +186,37 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         updateData['summary'] = summary;
       }
       if (education != null) {
-        updateData['education'] = education.map((e) => UserModel.educationToMap(e)).toList();
+        updateData['education'] = education
+            .map((e) => UserModel.educationToMap(e))
+            .toList();
       }
       if (experience != null) {
-        updateData['experience'] = experience.map((e) => UserModel.experienceToMap(e)).toList();
+        updateData['experience'] = experience
+            .map((e) => UserModel.experienceToMap(e))
+            .toList();
       }
       if (skills != null) {
         updateData['skills'] = skills;
       }
       if (projects != null) {
-        updateData['projects'] = projects.map((p) => UserModel.projectToMap(p)).toList();
+        updateData['projects'] = projects
+            .map((p) => UserModel.projectToMap(p))
+            .toList();
       }
       if (certifications != null) {
-        updateData['certifications'] = certifications.map((c) => UserModel.certificationToMap(c)).toList();
+        updateData['certifications'] = certifications
+            .map((c) => UserModel.certificationToMap(c))
+            .toList();
       }
 
       await _firestore.collection('users').doc(user.uid).update(updateData);
 
       return await _getUserFromFirestore(user.uid);
     } on FirebaseAuthException catch (e) {
-      throw AuthException(message: e.message ?? 'Failed to update profile', code: e.code);
+      throw AuthException(
+        message: e.message ?? 'Failed to update profile',
+        code: e.code,
+      );
     } catch (e) {
       throw AuthException(message: 'Failed to update profile', code: 'UNKNOWN');
     }
@@ -224,7 +238,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
       final firebaseUser = _firebaseAuth.currentUser;
-      
+
       if (!doc.exists && firebaseUser != null) {
         // Create user document if it doesn't exist (first time Google sign-in)
         final userModel = UserModel(
@@ -235,37 +249,47 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
-        await _firestore.collection('users').doc(uid).set(userModel.toFirestore());
+        await _firestore
+            .collection('users')
+            .doc(uid)
+            .set(userModel.toFirestore());
         return userModel;
       }
-      
+
       if (doc.exists) {
         // Update user data if Firebase user has newer info
         if (firebaseUser != null) {
           final existingModel = UserModel.fromFirestore(doc);
-          final shouldUpdate = existingModel.displayName != firebaseUser.displayName ||
+          final shouldUpdate =
+              existingModel.displayName != firebaseUser.displayName ||
               existingModel.photoUrl != firebaseUser.photoURL;
-          
+
           if (shouldUpdate) {
             final updatedModel = UserModel(
               id: uid,
               email: firebaseUser.email ?? existingModel.email,
-              displayName: firebaseUser.displayName ?? existingModel.displayName,
+              displayName:
+                  firebaseUser.displayName ?? existingModel.displayName,
               photoUrl: firebaseUser.photoURL ?? existingModel.photoUrl,
               createdAt: existingModel.createdAt ?? DateTime.now(),
               updatedAt: DateTime.now(),
             );
-            await _firestore.collection('users').doc(uid).update(updatedModel.toFirestore());
+            await _firestore
+                .collection('users')
+                .doc(uid)
+                .update(updatedModel.toFirestore());
             return updatedModel;
           }
         }
         return UserModel.fromFirestore(doc);
       }
-      
+
       throw AuthException(message: 'User not found', code: 'USER_NOT_FOUND');
     } catch (e) {
-      throw AuthException(message: 'Failed to get user data', code: 'GET_USER_DATA_FAILED');
+      throw AuthException(
+        message: 'Failed to get user data',
+        code: 'GET_USER_DATA_FAILED',
+      );
     }
   }
 }
-

@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:resumeiq/models/resume_model.dart' as model;
 import 'package:uuid/uuid.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/constants/firebase_constants.dart';
-import '../../../../shared/models/resume_model.dart' as model;
+
 
 /// Remote data source for resumes
 abstract class ResumeRemoteDataSource {

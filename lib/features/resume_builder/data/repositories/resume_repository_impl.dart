@@ -1,10 +1,11 @@
 import 'package:dartz/dartz.dart';
+import 'package:resumeiq/models/resume_model.dart' as model;
+import 'package:resumeiq/services/firebase_ai_service.dart';
 import '../../domain/entities/resume_entity.dart';
 import '../../domain/repositories/resume_repository.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/errors/error_handler.dart';
-import '../../../../shared/models/resume_model.dart' as model;
-import '../../../../shared/services/firebase_ai_service.dart';
+
 import '../datasources/resume_remote_datasource.dart';
 
 class ResumeRepositoryImpl implements ResumeRepository {
@@ -53,7 +54,7 @@ class ResumeRepositoryImpl implements ResumeRepository {
   Future<Either<Failure, List<ResumeEntity>>> getUserResumes(String userId) async {
     try {
       final resumes = await _remoteDataSource.getUserResumes(userId);
-      return Right(resumes.map(_modelToEntity).toList());
+      return Right(resumes.map((resume) => _modelToEntity(resume)).toList());
     } catch (e) {
       return Left(ErrorHandler.mapExceptionToFailure(e));
     }

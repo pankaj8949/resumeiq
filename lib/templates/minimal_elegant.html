@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="template-title" content="Minimal Elegant">
+    <meta name="template-description" content="Sophisticated minimalist resume template with elegant typography and subtle design elements. Perfect for professionals who prefer clean, modern aesthetics with excellent readability and refined styling.">
+    <title>Resume - Minimal Elegant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.7;
+            color: #2c3e50;
+            background: white;
+            padding: 0;
+            margin: 0;
+        }
+
+        .resume-container {
+            max-width: 210mm;
+            margin: 0;
+            background: white;
+            padding: 12mm;
+            width: 100%;
+            height: 297mm;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #e8e8e8;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e8e8e8;
+            position: relative;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: #2c3e50;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            font-weight: 400;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            color: #7f8c8d;
+            font-size: 9px;
+            font-style: italic;
+            margin-top: 12px;
+        }
+
+        .contact-info span {
+            padding: 5px 0;
+            border-bottom: 1px dotted #e8e8e8;
+        }
+
+        .section {
+            margin-bottom: 22px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid #e8e8e8;
+            padding-bottom: 6px;
+            position: relative;
+        }
+
+        .section-title::before {
+            content: '○';
+            position: absolute;
+            left: -15px;
+            color: #95a5a6;
+            font-size: 8px;
+        }
+
+        .summary {
+            padding: 12px 0;
+            margin-bottom: 12px;
+            font-size: 10px;
+            line-height: 1.8;
+            color: #555;
+            text-align: justify;
+            border-left: 2px solid #e8e8e8;
+            padding-left: 15px;
+            font-style: italic;
+        }
+
+        .experience-item, .education-item, .project-item {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .experience-item::before, .education-item::before, .project-item::before {
+            content: '—';
+            position: absolute;
+            left: 0;
+            color: #bdc3c7;
+            font-size: 14px;
+        }
+
+        .experience-item:last-child, .education-item:last-child, .project-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .item-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 3px;
+            letter-spacing: 0.5px;
+        }
+
+        .item-subtitle {
+            color: #7f8c8d;
+            font-size: 9px;
+            font-style: italic;
+        }
+
+        .item-date {
+            color: #95a5a6;
+            font-size: 9px;
+            font-weight: 300;
+            white-space: nowrap;
+            font-style: italic;
+        }
+
+        .item-description {
+            margin-top: 8px;
+            color: #555;
+            line-height: 1.7;
+            font-size: 9.5px;
+        }
+
+        .item-description ul {
+            margin-left: 16px;
+            margin-top: 6px;
+        }
+
+        .item-description li {
+            margin-bottom: 4px;
+        }
+
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .skill-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #f8f8f8;
+            border: 1px solid #e8e8e8;
+            border-radius: 3px;
+            font-size: 9px;
+            color: #555;
+            font-weight: 300;
+            letter-spacing: 0.3px;
+        }
+
+        .project-item {
+            padding-left: 20px;
+        }
+
+        .certification-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .certification-item::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #bdc3c7;
+            font-size: 12px;
+        }
+
+        .certification-item:last-child {
+            border-bottom: none;
+        }
+
+        .certification-name {
+            font-weight: 500;
+            color: #1a1a1a;
+            font-size: 10px;
+            letter-spacing: 0.3px;
+        }
+
+        .certification-issuer {
+            color: #7f8c8d;
+            font-size: 9px;
+            margin-top: 3px;
+            font-style: italic;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .resume-container {
+                padding: 12mm;
+                max-width: 100%;
+                height: 297mm;
+                border: 1px solid #e8e8e8;
+            }
+            @page {
+                margin: 0;
+                size: A4;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="resume-container">
+        <div class="header">
+            <h1>$fullName</h1>
+            <div class="contact-info">
+                <span>📧 $email</span>
+                <span>📱 $phone</span>
+                <span>📍 $location</span>
+                <span>🔗 $linkedInUrl</span>
+                <span>🌐 $portfolioUrl</span>
+                <span>💻 $githubUrl</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="summary">
+                $summary
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Professional Experience</h2>
+            $EXPERIENCE_START
+            <div class="experience-item">
+                <div class="item-header">
+                    <div>
+                        <div class="item-title">$position</div>
+                        <div class="item-subtitle">$company$expLocation</div>
+                    </div>
+                    <div class="item-date">$startDate - $endDate</div>
+                </div>
+                <div class="item-description">
+                    <ul>
+                        $RESPONSIBILITIES_START
+                        <li>$responsibility</li>
+                        $RESPONSIBILITIES_END
+                    </ul>
+                </div>
+            </div>
+            $EXPERIENCE_END
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Education</h2>
+            $EDUCATION_START
+            <div class="education-item">
+                <div class="item-header">
+                    <div>
+                        <div class="item-title">$degree$fieldOfStudy</div>
+                        <div class="item-subtitle">$institution</div>
+                    </div>
+                    <div class="item-date">$eduStartDate - $eduEndDate</div>
+                </div>
+                <div class="item-description">
+                    $description
+                </div>
+            </div>
+            $EDUCATION_END
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Skills</h2>
+            <div class="skills-container">
+                $SKILLS_START
+                <span class="skill-tag">$skill</span>
+                $SKILLS_END
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Projects</h2>
+            $PROJECTS_START
+            <div class="project-item">
+                <div class="item-header">
+                    <div>
+                        <div class="item-title">$projectName</div>
+                        <div class="item-subtitle">$projectUrl</div>
+                    </div>
+                    <div class="item-date">$projectStartDate - $projectEndDate</div>
+                </div>
+                <div class="item-description">
+                    $projectDescription
+                </div>
+            </div>
+            $PROJECTS_END
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Certifications</h2>
+            $CERTIFICATIONS_START
+            <div class="certification-item">
+                <div>
+                    <div class="certification-name">$certName</div>
+                    <div class="certification-issuer">$certIssuer</div>
+                </div>
+                <div class="item-date">$certIssueDate</div>
+            </div>
+            $CERTIFICATIONS_END
+        </div>
+    </div>
+</body>
+</html>

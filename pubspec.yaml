@@ -32,15 +32,16 @@ dependencies:
 
   # AI & API
   google_generative_ai: ^0.4.7
-  http: ^1.2.2
   dio: ^5.4.1
 
   # File Handling & Parsing
   file_picker: ^8.1.4
   pdf: ^3.11.1
+  flutter_pdf_text: ^0.9.0
   printing: ^5.13.2
-  syncfusion_flutter_pdf: ^28.1.41
-  flutter_widget_from_html: ^0.15.2
+  html_to_pdf: ^0.8.1
+  webview_flutter_plus: ^0.4.19
+  webview_flutter: ^4.13.1
   html: ^0.15.4
   # Note: DOCX parsing can be added later with appropriate package
 
@@ -95,6 +96,7 @@ flutter:
   assets:
     - .env
     - assets/fonts/
+    - lib/templates/
 
   # Custom fonts for PDF generation
   fonts:

@@ -106,7 +106,7 @@ class ErrorHandler {
     switch (failure.runtimeType) {
       case NetworkFailure _:
         return 'No internet connection. Please check your network.';
-      case ServerFailure:
+      case const (ServerFailure):
         return failure.message ?? 'Server error. Please try again later.';
       case AuthFailure:
         return failure.message ?? 'Authentication failed. Please try again.';

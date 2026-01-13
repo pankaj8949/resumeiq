@@ -4,6 +4,7 @@ class GeminiConstants {
 
   /// ✅ Default FREE model (FAST & STABLE)
   static const String defaultModel = 'gemini-2.5-flash-lite';
+  // static const String defaultModel = 'gemini-1.5-flash';
 
   /// ✅ Flash model (same as default, free tier)
   static const String flashModel = 'gemini-1.5-flash';

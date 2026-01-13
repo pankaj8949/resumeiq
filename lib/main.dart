@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'models/user_model.dart';
 import 'core/config/firebase_config.dart';
 import 'core/theme/app_theme.dart';
-import 'features/auth/presentation/providers/auth_provider.dart';
-import 'features/auth/presentation/pages/login_page.dart';
-import 'features/auth/presentation/pages/profile_setup_page.dart';
-import 'features/dashboard/presentation/pages/main_navigation_page.dart';
-import 'features/dashboard/presentation/pages/splash_page.dart';
+import 'providers/auth_provider.dart';
+import 'screens/login_page.dart';
+import 'screens/profile_setup_page.dart';
+import 'screens/main_navigation_page.dart';
+import 'screens/splash_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Firebase
   await FirebaseConfig.initialize();
-  
-  runApp(
-    const ProviderScope(
-      child: ResumeIQApp(),
-    ),
-  );
+
+  runApp(const ProviderScope(child: ResumeIQApp()));
 }
 
 class ResumeIQApp extends StatelessWidget {
@@ -39,7 +36,7 @@ class ResumeIQApp extends StatelessWidget {
 class AuthWrapper extends ConsumerWidget {
   const AuthWrapper({super.key});
 
-  bool _isProfileComplete(user) {
+  bool _isProfileComplete(UserModel user) {
     return user.displayName != null &&
         user.displayName!.isNotEmpty &&
         user.phone != null &&
