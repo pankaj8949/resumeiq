@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../models/resume_model.dart';
@@ -13,11 +14,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 /// Auth state
 class AuthState {
-  const AuthState({
-    this.user,
-    this.isLoading = false,
-    this.error,
-  });
+  const AuthState({this.user, this.isLoading = false, this.error});
 
   final UserModel? user;
   final bool isLoading;
@@ -39,11 +36,8 @@ class AuthState {
 
 /// Auth state notifier
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier(
-    this._signInUseCase,
-    this._signOutUseCase,
-    this._repository,
-  ) : super(const AuthState()) {
+  AuthNotifier(this._signInUseCase, this._signOutUseCase, this._repository)
+    : super(const AuthState()) {
     _init();
   }
 
@@ -53,11 +47,37 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> _init() async {
     state = state.copyWith(isLoading: true);
-    final result = await _repository.getCurrentUser();
-    result.fold(
-      (failure) => state = state.copyWith(isLoading: false, error: failure.message),
-      (user) => state = state.copyWith(user: UserModel.fromEntity(user!), isLoading: false),
-    );
+    try {
+      // Add timeout to prevent indefinite loading (10 seconds)
+      final result = await _repository.getCurrentUser().timeout(
+        const Duration(seconds: 10),
+      );
+      result.fold(
+        (failure) {
+          // On failure, set user to null and stop loading
+          // This allows the app to navigate to login page
+          state = state.copyWith(user: null, isLoading: false, error: null);
+        },
+        (user) {
+          // Handle null user (new/first-time users who haven't signed in)
+          if (user == null) {
+            state = state.copyWith(user: null, isLoading: false);
+          } else {
+            state = state.copyWith(
+              user: UserModel.fromEntity(user),
+              isLoading: false,
+            );
+          }
+        },
+      );
+    } on TimeoutException {
+      // Handle timeout - treat as no user and navigate to login
+      state = state.copyWith(user: null, isLoading: false, error: null);
+    } catch (e) {
+      // Catch any unexpected errors and ensure loading stops
+      // Treat as no user to allow navigation to login page
+      state = state.copyWith(user: null, isLoading: false, error: null);
+    }
   }
 
   Future<bool> signInWithGoogle() async {
@@ -69,7 +89,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return false;
       },
       (user) {
-        state = state.copyWith(user: UserModel.fromEntity(user), isLoading: false);
+        state = state.copyWith(
+          user: UserModel.fromEntity(user),
+          isLoading: false,
+        );
         return true;
       },
     );
@@ -116,41 +139,57 @@ class AuthNotifier extends StateNotifier<AuthState> {
       portfolioUrl: portfolioUrl,
       githubUrl: githubUrl,
       summary: summary,
-      education: education?.map((e) => EducationEntity(
-        institution: e.institution,
-        degree: e.degree,
-        fieldOfStudy: e.fieldOfStudy,
-        startDate: e.startDate,
-        endDate: e.endDate,
-        description: e.description,
-        gpa: e.gpa,
-      )).toList(),
-      experience: experience?.map((e) => ExperienceEntity(
-        company: e.company,
-        position: e.position,
-        startDate: e.startDate,
-        endDate: e.endDate,
-        responsibilities: e.responsibilities,
-        location: e.location,
-        isCurrentRole: e.isCurrentRole,
-      )).toList(),
+      education: education
+          ?.map(
+            (e) => EducationEntity(
+              institution: e.institution,
+              degree: e.degree,
+              fieldOfStudy: e.fieldOfStudy,
+              startDate: e.startDate,
+              endDate: e.endDate,
+              description: e.description,
+              gpa: e.gpa,
+            ),
+          )
+          .toList(),
+      experience: experience
+          ?.map(
+            (e) => ExperienceEntity(
+              company: e.company,
+              position: e.position,
+              startDate: e.startDate,
+              endDate: e.endDate,
+              responsibilities: e.responsibilities,
+              location: e.location,
+              isCurrentRole: e.isCurrentRole,
+            ),
+          )
+          .toList(),
       skills: skills,
-      projects: projects?.map((p) => ProjectEntity(
-        name: p.name,
-        description: p.description,
-        technologies: p.technologies,
-        url: p.url,
-        startDate: p.startDate,
-        endDate: p.endDate,
-      )).toList(),
-      certifications: certifications?.map((c) => CertificationEntity(
-        name: c.name,
-        issuer: c.issuer,
-        issueDate: c.issueDate,
-        expiryDate: c.expiryDate,
-        credentialId: c.credentialId,
-        url: c.url,
-      )).toList(),
+      projects: projects
+          ?.map(
+            (p) => ProjectEntity(
+              name: p.name,
+              description: p.description,
+              technologies: p.technologies,
+              url: p.url,
+              startDate: p.startDate,
+              endDate: p.endDate,
+            ),
+          )
+          .toList(),
+      certifications: certifications
+          ?.map(
+            (c) => CertificationEntity(
+              name: c.name,
+              issuer: c.issuer,
+              issueDate: c.issueDate,
+              expiryDate: c.expiryDate,
+              credentialId: c.credentialId,
+              url: c.url,
+            ),
+          )
+          .toList(),
     );
     return result.fold(
       (failure) {
@@ -158,7 +197,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return false;
       },
       (user) {
-        state = state.copyWith(user: UserModel.fromEntity(user), isLoading: false);
+        state = state.copyWith(
+          user: UserModel.fromEntity(user),
+          isLoading: false,
+        );
         return true;
       },
     );
@@ -188,11 +230,12 @@ final signOutUseCaseProvider = Provider<SignOutUseCase>((ref) {
 });
 
 /// Auth notifier provider
-final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((
+  ref,
+) {
   return AuthNotifier(
     ref.watch(signInUseCaseProvider),
     ref.watch(signOutUseCaseProvider),
     ref.watch(authRepositoryProvider),
   );
 });
-

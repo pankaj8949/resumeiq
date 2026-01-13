@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 /// Login page with Google Sign-In
 class LoginPage extends ConsumerStatefulWidget {
@@ -81,9 +82,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(
-                          Icons.login,
-                          size: 24,
+                      : CachedNetworkImage(
+                          imageUrl: 'https://www.google.com/favicon.ico',
+                          width: 24,
+                          height: 24,
                         ),
                   label: Text(
                     authState.isLoading ? 'Signing in...' : 'Continue with Google',

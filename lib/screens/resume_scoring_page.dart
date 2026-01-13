@@ -264,39 +264,42 @@ class _ResumeScoringPageState extends ConsumerState<ResumeScoringPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Overall Score Card
-            Card(
-              color: AppTheme.getScoreColor(score.overallScore),
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  children: [
-                    Text(
-                      'Overall Score',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleLarge?.copyWith(color: Colors.white),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${score.overallScore}',
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+            Center(
+              child: Card(
+                color: AppTheme.getScoreColor(score.overallScore),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Overall Score',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleLarge?.copyWith(color: Colors.white),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      score.overallScore >= 80
-                          ? 'Excellent! Your resume is ATS-optimized.'
-                          : score.overallScore >= 60
-                          ? 'Good, but there\'s room for improvement.'
-                          : 'Needs significant improvements.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withOpacity(0.9),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${score.overallScore}',
+                        style: Theme.of(context).textTheme.displayLarge
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        score.overallScore >= 80
+                            ? 'Excellent! Your resume is ATS-optimized.'
+                            : score.overallScore >= 60
+                            ? 'Good, but there\'s room for improvement.'
+                            : 'Needs significant improvements.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
