@@ -7,15 +7,18 @@ import '../services/template_loader_service.dart';
 import '../services/html_to_pdf_service.dart';
 import '../services/template_replacement_service.dart';
 import '../providers/auth_provider.dart';
+import '../models/user_model.dart';
 import 'package:intl/intl.dart';
 
 /// Resume Building Loading Page - Converts HTML to PDF
 class ResumeBuildingLoadingPage extends ConsumerStatefulWidget {
   final TemplateMetadata template;
+  final UserModel? overrideUser;
 
   const ResumeBuildingLoadingPage({
     super.key,
     required this.template,
+    this.overrideUser,
   });
 
   @override
@@ -45,7 +48,7 @@ class _ResumeBuildingLoadingPageState
       });
 
       // Get user data and replace template placeholders
-      final user = ref.read(authNotifierProvider).user;
+      final user = widget.overrideUser ?? ref.read(authNotifierProvider).user;
       final htmlContent = user != null
           ? TemplateReplacementService.instance.replaceTemplate(
               widget.template.htmlContent,

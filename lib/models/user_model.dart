@@ -121,6 +121,7 @@ class UserModel extends UserEntity {
         responsibilities: (e['responsibilities'] as List?)?.map((r) => r.toString()).toList() ?? [],
         location: e['location'] as String?,
         isCurrentRole: e['isCurrentRole'] as bool?,
+        description: e['description'] as String?,
       );
     }).whereType<ExperienceEntity>().toList();
   }
@@ -185,6 +186,7 @@ class UserModel extends UserEntity {
       'responsibilities': e.responsibilities,
       'location': e.location,
       'isCurrentRole': e.isCurrentRole,
+      'description': e.description,
     };
   }
 

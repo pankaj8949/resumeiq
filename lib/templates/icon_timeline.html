@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="template-title" content="Icon Timeline" />
+  <meta name="template-description" content="Modern timeline resume with a left sidebar for contact/skills and a vertical icon timeline separating profile, experience, and education." />
+  <title>Resume - Icon Timeline</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #ffffff;
+      color: #0f172a;
+      line-height: 1.45;
+    }
+
+    /* A4 */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 12mm;
+    }
+
+    .top {
+      padding-bottom: 10px;
+      border-bottom: 2px solid #1f3a5a;
+      margin-bottom: 10mm;
+    }
+    .name {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+    .title {
+      margin-top: 4px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      opacity: 0.75;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 60mm 10mm 1fr;
+      gap: 8mm;
+      align-items: start;
+    }
+
+    /* Left sidebar */
+    .left .block { margin-bottom: 14px; }
+    .left h3 {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #1f3a5a;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(31,58,90,0.35);
+      margin-bottom: 10px;
+    }
+    .contact-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 9.5px;
+      word-break: break-word;
+    }
+    .c-row {
+      display: grid;
+      grid-template-columns: 16px 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+    .c-ico {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(31,58,90,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #1f3a5a;
+      font-weight: 900;
+    }
+    .bullet-list { margin-left: 18px; }
+    .bullet-list li { font-size: 9.5px; margin-bottom: 5px; line-height: 1.35; }
+    .ref-text { font-size: 9.5px; opacity: 0.9; }
+
+    /* Middle timeline */
+    .timeline {
+      position: relative;
+      min-height: 240mm;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: rgba(15,23,42,0.25);
+      transform: translateX(-50%);
+    }
+    .node {
+      position: relative;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 2px solid #1f3a5a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1f3a5a;
+      font-weight: 900;
+      font-size: 11px;
+      margin: 0 auto;
+    }
+    .node.profile { margin-top: 18px; }
+    .node.exp { margin-top: 58px; }
+    .node.edu { margin-top: 152px; }
+    .node span { transform: translateY(-0.5px); }
+
+    /* Right content */
+    .right .section { margin-bottom: 16px; }
+    .right .section-title {
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #1f3a5a;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(31,58,90,0.35);
+      margin-bottom: 10px;
+    }
+    .profile-text {
+      font-size: 10px;
+      line-height: 1.65;
+      opacity: 0.92;
+    }
+
+    .exp-item {
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid rgba(15,23,42,0.10);
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .exp-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .exp-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+    .exp-company {
+      font-size: 10px;
+      font-weight: 900;
+      color: #0f172a;
+    }
+    .exp-dates { font-size: 9px; opacity: 0.8; white-space: nowrap; }
+    .exp-role {
+      margin-top: 2px;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #1f3a5a;
+      opacity: 0.95;
+    }
+
+    .item-description {
+      margin-top: 6px;
+      font-size: 10px;
+      line-height: 1.55;
+      word-wrap: break-word;
+    }
+    .item-description ul { margin-left: 18px; margin-top: 4px; }
+    .item-description li { margin-bottom: 3px; }
+    .item-description p,
+    .item-description div {
+      margin-top: 6px;
+      margin-bottom: 0;
+      list-style: none;
+      display: block;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    .edu-item {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      margin-bottom: 10px;
+    }
+    .edu-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: baseline;
+    }
+    .edu-degree { font-size: 10.5px; font-weight: 900; }
+    .edu-years { font-size: 9px; opacity: 0.8; white-space: nowrap; }
+    .edu-inst { margin-top: 2px; font-size: 9.5px; font-weight: 700; color: #1f3a5a; }
+    .edu-desc { margin-top: 4px; font-size: 9.5px; opacity: 0.9; }
+
+    @media print {
+      body { background: #ffffff; }
+      .page { margin: 0; }
+      @page { size: A4; margin: 0; }
+      .exp-item, .edu-item, .left .block { break-inside: avoid; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top">
+      <div class="name">$fullName</div>
+      <div class="title">$professionalTitle</div>
+    </div>
+
+    <div class="layout">
+      <!-- Left -->
+      <aside class="left">
+        <div class="block">
+          <h3>Contact</h3>
+          <div class="contact-list">
+            <div class="c-row"><span class="c-ico">☎</span><span>$phone</span></div>
+            <div class="c-row"><span class="c-ico">✉</span><span>$email</span></div>
+            <div class="c-row"><span class="c-ico">⌂</span><span>$location</span></div>
+            <div class="c-row"><span class="c-ico">↗</span><span>$portfolioUrl</span></div>
+            <div class="c-row"><span class="c-ico">in</span><span>$linkedInUrl</span></div>
+          </div>
+        </div>
+
+        <div class="block">
+          <h3>Skills</h3>
+          <ul class="bullet-list">
+            $SKILLS_START
+            <li>$skill</li>
+            $SKILLS_END
+          </ul>
+        </div>
+
+        <div class="block">
+          <h3>Languages</h3>
+          <div class="ref-text">Add languages in Skills or Certifications if needed.</div>
+        </div>
+
+        <div class="block">
+          <h3>Reference</h3>
+          <div class="ref-text">Available upon request.</div>
+        </div>
+      </aside>
+
+      <!-- Timeline -->
+      <div class="timeline" aria-hidden="true">
+        <div class="node profile"><span>👤</span></div>
+        <div class="node exp"><span>💼</span></div>
+        <div class="node edu"><span>🎓</span></div>
+      </div>
+
+      <!-- Right -->
+      <main class="right">
+        <div class="section">
+          <div class="section-title">Profile</div>
+          <div class="profile-text">$summary</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Work Experience</div>
+          $EXPERIENCE_START
+          <div class="exp-item">
+            <div class="exp-head">
+              <div class="exp-company">$company</div>
+              <div class="exp-dates">$startDate - $endDate</div>
+            </div>
+            <div class="exp-role">$position$expLocation</div>
+            <div class="item-description">
+              <ul>
+                $RESPONSIBILITIES_START
+                <li>$responsibility</li>
+                $RESPONSIBILITIES_END
+              </ul>
+              $expDescription
+            </div>
+          </div>
+          $EXPERIENCE_END
+        </div>
+
+        <div class="section">
+          <div class="section-title">Education</div>
+          $EDUCATION_START
+          <div class="edu-item">
+            <div class="edu-row">
+              <div class="edu-degree">$degree$fieldOfStudy</div>
+              <div class="edu-years">$eduStartDate - $eduEndDate</div>
+            </div>
+            <div class="edu-inst">$institution</div>
+            <div class="edu-desc">$description</div>
+          </div>
+          $EDUCATION_END
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

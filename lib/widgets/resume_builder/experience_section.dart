@@ -153,6 +153,13 @@ class _ExperienceItem extends StatelessWidget {
               ),
             ),
           ],
+          if (experience.description != null && experience.description!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              experience.description!,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
         ],
       ),
     );

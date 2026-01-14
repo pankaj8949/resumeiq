@@ -1164,6 +1164,7 @@ mixin _$Experience {
   List<String> get responsibilities => throw _privateConstructorUsedError;
   String? get location => throw _privateConstructorUsedError;
   bool? get isCurrentRole => throw _privateConstructorUsedError;
+  String? get description => throw _privateConstructorUsedError;
 
   /// Serializes this Experience to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1190,6 +1191,7 @@ abstract class $ExperienceCopyWith<$Res> {
     List<String> responsibilities,
     String? location,
     bool? isCurrentRole,
+    String? description,
   });
 }
 
@@ -1215,6 +1217,7 @@ class _$ExperienceCopyWithImpl<$Res, $Val extends Experience>
     Object? responsibilities = null,
     Object? location = freezed,
     Object? isCurrentRole = freezed,
+    Object? description = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -1246,6 +1249,10 @@ class _$ExperienceCopyWithImpl<$Res, $Val extends Experience>
                 ? _value.isCurrentRole
                 : isCurrentRole // ignore: cast_nullable_to_non_nullable
                       as bool?,
+            description: freezed == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -1269,6 +1276,7 @@ abstract class _$$ExperienceImplCopyWith<$Res>
     List<String> responsibilities,
     String? location,
     bool? isCurrentRole,
+    String? description,
   });
 }
 
@@ -1293,6 +1301,7 @@ class __$$ExperienceImplCopyWithImpl<$Res>
     Object? responsibilities = null,
     Object? location = freezed,
     Object? isCurrentRole = freezed,
+    Object? description = freezed,
   }) {
     return _then(
       _$ExperienceImpl(
@@ -1324,6 +1333,10 @@ class __$$ExperienceImplCopyWithImpl<$Res>
             ? _value.isCurrentRole
             : isCurrentRole // ignore: cast_nullable_to_non_nullable
                   as bool?,
+        description: freezed == description
+            ? _value.description
+            : description // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -1340,6 +1353,7 @@ class _$ExperienceImpl implements _Experience {
     final List<String> responsibilities = const [],
     this.location,
     this.isCurrentRole,
+    this.description,
   }) : _responsibilities = responsibilities;
 
   factory _$ExperienceImpl.fromJson(Map<String, dynamic> json) =>
@@ -1369,10 +1383,12 @@ class _$ExperienceImpl implements _Experience {
   final String? location;
   @override
   final bool? isCurrentRole;
+  @override
+  final String? description;
 
   @override
   String toString() {
-    return 'Experience(company: $company, position: $position, startDate: $startDate, endDate: $endDate, responsibilities: $responsibilities, location: $location, isCurrentRole: $isCurrentRole)';
+    return 'Experience(company: $company, position: $position, startDate: $startDate, endDate: $endDate, responsibilities: $responsibilities, location: $location, isCurrentRole: $isCurrentRole, description: $description)';
   }
 
   @override
@@ -1393,7 +1409,9 @@ class _$ExperienceImpl implements _Experience {
             (identical(other.location, location) ||
                 other.location == location) &&
             (identical(other.isCurrentRole, isCurrentRole) ||
-                other.isCurrentRole == isCurrentRole));
+                other.isCurrentRole == isCurrentRole) &&
+            (identical(other.description, description) ||
+                other.description == description));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1407,6 +1425,7 @@ class _$ExperienceImpl implements _Experience {
     const DeepCollectionEquality().hash(_responsibilities),
     location,
     isCurrentRole,
+    description,
   );
 
   /// Create a copy of Experience
@@ -1432,6 +1451,7 @@ abstract class _Experience implements Experience {
     final List<String> responsibilities,
     final String? location,
     final bool? isCurrentRole,
+    final String? description,
   }) = _$ExperienceImpl;
 
   factory _Experience.fromJson(Map<String, dynamic> json) =
@@ -1453,6 +1473,8 @@ abstract class _Experience implements Experience {
   String? get location;
   @override
   bool? get isCurrentRole;
+  @override
+  String? get description;
 
   /// Create a copy of Experience
   /// with the given fields replaced by the non-null parameter values.

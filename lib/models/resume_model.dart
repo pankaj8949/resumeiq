@@ -102,6 +102,7 @@ class Experience with _$Experience {
     @Default([]) List<String> responsibilities,
     String? location,
     bool? isCurrentRole,
+    String? description,
   }) = _Experience;
 
   factory Experience.fromJson(Map<String, dynamic> json) =>

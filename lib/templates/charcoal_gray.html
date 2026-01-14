@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="template-title" content="Charcoal Gray" />
+  <meta name="template-description" content="Dark charcoal resume with gold accents and clean typography. Includes Profile, Experience, and Education with strong section separators." />
+  <title>Resume - Charcoal Gray</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #111111;
+      color: #e5e7eb;
+      line-height: 1.55;
+    }
+
+    /* A4 */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #2b2b2b; /* charcoal */
+      padding: 14mm 14mm 12mm 14mm;
+    }
+
+    .name {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #f5f5f5;
+    }
+    .subtitle {
+      text-align: center;
+      margin-top: 4px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #d6b15e; /* gold */
+      opacity: 0.95;
+    }
+
+    .contact-bar {
+      margin-top: 10px;
+      background: #d6b15e;
+      color: #111111;
+      padding: 6px 10px;
+      font-size: 9.5px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px 12px;
+      border-radius: 2px;
+    }
+    .contact-bar span { white-space: nowrap; }
+
+    .section {
+      margin-top: 14px;
+    }
+    .section-title {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #d6b15e;
+      margin-bottom: 8px;
+    }
+
+    .text {
+      font-size: 10px;
+      color: #e5e7eb;
+      opacity: 0.95;
+    }
+
+    .divider {
+      margin: 14px 0 6px 0;
+      border-top: 1px solid rgba(214,177,94,0.55);
+      border-bottom: 1px solid rgba(214,177,94,0.10);
+      height: 0;
+    }
+    .zigzag {
+      margin: 14px 0;
+      height: 8px;
+      background:
+        repeating-linear-gradient(
+          135deg,
+          rgba(214,177,94,0.9) 0 2px,
+          rgba(214,177,94,0) 2px 6px
+        );
+      opacity: 0.55;
+    }
+
+    /* Experience */
+    .exp-item {
+      margin-top: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .exp-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .exp-head {
+      font-size: 11px;
+      font-weight: 800;
+      color: #f3f4f6;
+    }
+    .exp-meta {
+      margin-top: 3px;
+      font-size: 9.5px;
+      color: rgba(229,231,235,0.9);
+    }
+
+    .item-description {
+      margin-top: 6px;
+      font-size: 10px;
+      line-height: 1.55;
+      color: #e5e7eb;
+      word-wrap: break-word;
+    }
+    .item-description ul {
+      margin-left: 18px;
+      margin-top: 4px;
+    }
+    .item-description li { margin-bottom: 3px; }
+    .item-description p,
+    .item-description div {
+      margin-top: 6px;
+      margin-bottom: 0;
+      list-style: none;
+      display: block;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    /* Education */
+    .edu-item {
+      margin-top: 10px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .edu-head {
+      font-size: 11px;
+      font-weight: 800;
+      color: #f3f4f6;
+    }
+    .edu-meta {
+      margin-top: 3px;
+      font-size: 9.5px;
+      color: rgba(229,231,235,0.9);
+    }
+
+    @media print {
+      body { background: #2b2b2b; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { margin: 0; }
+      @page { size: A4; margin: 0; }
+      .section, .exp-item, .edu-item { break-inside: avoid; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="name">$fullName</div>
+    <div class="subtitle">$professionalTitle</div>
+
+    <div class="contact-bar">
+      <span>p: $phone</span>
+      <span>•</span>
+      <span>e: $email</span>
+      <span>•</span>
+      <span>a: $location</span>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Profile</div>
+      <div class="text">$summary</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section">
+      <div class="section-title">Experience</div>
+      $EXPERIENCE_START
+      <div class="exp-item">
+        <div class="exp-head">$company / $position ($startDate &gt; $endDate)</div>
+        <div class="exp-meta">$expLocation</div>
+        <div class="item-description">
+          <ul>
+            $RESPONSIBILITIES_START
+            <li>$responsibility</li>
+            $RESPONSIBILITIES_END
+          </ul>
+          $expDescription
+        </div>
+      </div>
+      $EXPERIENCE_END
+    </div>
+
+    <div class="zigzag"></div>
+
+    <div class="section">
+      <div class="section-title">Education</div>
+      $EDUCATION_START
+      <div class="edu-item">
+        <div class="edu-head">$institution ($eduStartDate &gt; $eduEndDate)</div>
+        <div class="edu-meta">$degree$fieldOfStudy</div>
+        <div class="edu-meta">$description</div>
+      </div>
+      $EDUCATION_END
+    </div>
+  </div>
+</body>
+</html>

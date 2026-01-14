@@ -153,6 +153,7 @@ Requirements:
                 responsibilities: e.responsibilities,
                 location: e.location,
                 isCurrentRole: e.isCurrentRole,
+                description: e.description,
               ))
           .toList(),
       skills: entity.skills,
@@ -221,6 +222,7 @@ Requirements:
                 responsibilities: e.responsibilities,
                 location: e.location,
                 isCurrentRole: e.isCurrentRole,
+                description: e.description,
               ))
           .toList(),
       skills: model.skills,

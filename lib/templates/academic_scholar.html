@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="template-title" content="Academic Scholar" />
+  <meta name="template-description" content="Academic single-column resume with clean typography, subtle dotted header, yellow highlights, skill bars, and achievements. Great for research and academia." />
+  <title>Resume - Academic Scholar</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #ffffff;
+      color: #111827;
+      line-height: 1.5;
+    }
+
+    /* A4 */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 12mm;
+    }
+
+    /* Header with dotted decoration (no external image) */
+    .header {
+      position: relative;
+      padding: 10mm 8mm 8mm 8mm;
+      text-align: center;
+      border-bottom: 1px solid rgba(17,24,39,0.18);
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      left: -30px;
+      right: -30px;
+      top: -30px;
+      height: 70px;
+      background:
+        radial-gradient(circle, rgba(0,0,0,0.12) 1px, rgba(0,0,0,0) 2px) 0 0/10px 10px;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .name {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1;
+    }
+    .title {
+      margin-top: 2px;
+      font-size: 10px;
+      font-weight: 800;
+      color: #d97706; /* amber */
+      text-transform: capitalize;
+      position: relative;
+      z-index: 1;
+    }
+    .contacts {
+      margin-top: 6px;
+      font-size: 9.5px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px 10px;
+      position: relative;
+      z-index: 1;
+      color: #111827;
+      opacity: 0.95;
+    }
+    .contacts span { white-space: nowrap; }
+    .contacts .sep { opacity: 0.6; }
+
+    /* Sections */
+    .section { margin-top: 10px; }
+    .section-title {
+      font-size: 10.5px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      text-align: center;
+      margin: 10px 0 8px 0;
+    }
+    .barline {
+      height: 2px;
+      width: 100%;
+      background: #111827;
+      opacity: 0.2;
+      margin: 6px 0 10px 0;
+    }
+
+    /* Summary */
+    .summary {
+      font-size: 10px;
+      line-height: 1.6;
+      color: #111827;
+      opacity: 0.92;
+      text-align: left;
+    }
+
+    /* Experience */
+    .exp-item {
+      margin-bottom: 10px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .exp-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+    .exp-role {
+      font-size: 10.5px;
+      font-weight: 900;
+      color: #d97706;
+    }
+    .exp-date {
+      font-size: 9px;
+      opacity: 0.85;
+      white-space: nowrap;
+    }
+    .exp-sub {
+      margin-top: 1px;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #111827;
+      opacity: 0.9;
+    }
+
+    .item-description {
+      margin-top: 6px;
+      font-size: 10px;
+      line-height: 1.55;
+      color: #111827;
+      word-wrap: break-word;
+    }
+    .item-description ul {
+      margin-left: 18px;
+      margin-top: 4px;
+    }
+    .item-description li { margin-bottom: 3px; }
+    .item-description p,
+    .item-description div {
+      margin-top: 6px;
+      margin-bottom: 0;
+      list-style: none;
+      display: block;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    /* Education */
+    .edu-item { margin-bottom: 10px; break-inside: avoid; page-break-inside: avoid; }
+    .edu-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+    .edu-degree { font-size: 10.5px; font-weight: 900; color: #111827; }
+    .edu-date { font-size: 9px; opacity: 0.85; white-space: nowrap; }
+    .edu-inst { margin-top: 2px; font-size: 9.5px; font-weight: 800; color: #d97706; }
+    .edu-desc { margin-top: 3px; font-size: 9.5px; opacity: 0.9; }
+
+    /* Skills (no bars) */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 14px;
+    }
+    .skill-name {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #111827;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    /* Achievements - mapped from Projects (name + description as bullets) */
+    .ach-list { margin-left: 18px; margin-top: 2px; }
+    .ach-list li { margin-bottom: 5px; font-size: 10px; line-height: 1.5; }
+    .ach-list strong { color: #111827; }
+
+    @media print {
+      body { background: #ffffff; }
+      .page { margin: 0; }
+      @page { size: A4; margin: 0; }
+      .section, .exp-item, .edu-item, .skill-row { break-inside: avoid; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="name">$fullName</div>
+      <div class="title">$professionalTitle</div>
+      <div class="contacts">
+        <span>$email</span><span class="sep">•</span>
+        <span>$phone</span><span class="sep">•</span>
+        <span>$location</span><span class="sep">•</span>
+        <span>$portfolioUrl</span><span class="sep">•</span>
+        <span>$linkedInUrl</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Professional Summary</div>
+      <div class="barline"></div>
+      <div class="summary">$summary</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Work Experience</div>
+      <div class="barline"></div>
+
+      $EXPERIENCE_START
+      <div class="exp-item">
+        <div class="exp-head">
+          <div class="exp-role">$position</div>
+          <div class="exp-date">$startDate - $endDate</div>
+        </div>
+        <div class="exp-sub">$company$expLocation</div>
+        <div class="item-description">
+          <ul>
+            $RESPONSIBILITIES_START
+            <li>$responsibility</li>
+            $RESPONSIBILITIES_END
+          </ul>
+          $expDescription
+        </div>
+      </div>
+      $EXPERIENCE_END
+    </div>
+
+    <div class="section">
+      <div class="section-title">Education</div>
+      <div class="barline"></div>
+
+      $EDUCATION_START
+      <div class="edu-item">
+        <div class="edu-top">
+          <div class="edu-degree">$degree$fieldOfStudy</div>
+          <div class="edu-date">$eduStartDate - $eduEndDate</div>
+        </div>
+        <div class="edu-inst">$institution</div>
+        <div class="edu-desc">$description</div>
+      </div>
+      $EDUCATION_END
+    </div>
+
+    <div class="section">
+      <div class="section-title">Skills</div>
+      <div class="barline"></div>
+      <div class="skills-grid">
+        $SKILLS_START
+        <div class="skill-name">$skill</div>
+        $SKILLS_END
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Achievements</div>
+      <div class="barline"></div>
+      <ul class="ach-list">
+        $PROJECTS_START
+        <li><strong>$projectName</strong> — $projectDescription</li>
+        $PROJECTS_END
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

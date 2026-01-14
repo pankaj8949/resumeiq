@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="template-title" content="Navy Blue" />
+  <meta name="template-description" content="Navy blue two-column resume with angled top header and clean section blocks. No background watermark." />
+  <title>Resume - Navy Blue</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #ffffff;
+      color: #0f172a;
+      line-height: 1.45;
+    }
+
+    /* A4 */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #f5f7fb;
+      padding: 10mm;
+    }
+
+    .canvas {
+      min-height: 277mm;
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Top angled header */
+    .top {
+      position: relative;
+      padding: 12mm 12mm 10mm 12mm;
+      background: #ffffff;
+    }
+    .banner {
+      background: #24307a;
+      color: #ffffff;
+      padding: 10mm 10mm;
+      text-align: center;
+      transform: skewX(-10deg);
+      border-radius: 2px;
+      box-shadow: 0 6px 16px rgba(36,48,122,0.18);
+    }
+    .banner-inner {
+      transform: skewX(10deg);
+    }
+    .banner h1 {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      line-height: 1.15;
+      margin-bottom: 4px;
+    }
+    .banner .sub {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0.95;
+    }
+
+    /* Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: 62mm 1fr;
+      gap: 10mm;
+      padding: 0 12mm 12mm 12mm;
+    }
+
+    /* Left column cards */
+    .left {}
+    .card {
+      margin-top: 10px;
+      background: #ffffff;
+      border-left: 6px solid #24307a;
+      box-shadow: 0 4px 12px rgba(15,23,42,0.06);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .card-title {
+      background: #24307a;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .card-body {
+      padding: 10px 10px 12px 10px;
+      font-size: 10px;
+      color: #0f172a;
+    }
+
+    .contact-row {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+    .ico {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(36,48,122,0.12);
+      color: #24307a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .edu-item { margin-bottom: 10px; }
+    .edu-top { font-weight: 900; font-size: 10px; }
+    .edu-inst { font-weight: 700; color: #24307a; margin-top: 2px; }
+    .edu-meta { opacity: 0.85; margin-top: 2px; font-size: 9px; }
+    .edu-desc { opacity: 0.9; margin-top: 4px; font-size: 9.5px; }
+
+    /* Skills with simple bars (no levels in data; widths vary by row) */
+    .skill-row {
+      display: grid;
+      grid-template-columns: 1fr 52mm;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .skill-name { font-weight: 700; font-size: 9.5px; }
+    .bar {
+      height: 6px;
+      background: rgba(15,23,42,0.12);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar > span {
+      display: block;
+      height: 100%;
+      background: #24307a;
+      width: 72%;
+    }
+    .card-body .skill-row:nth-child(3n+1) .bar > span { width: 78%; }
+    .card-body .skill-row:nth-child(3n+2) .bar > span { width: 64%; }
+    .card-body .skill-row:nth-child(3n) .bar > span { width: 70%; }
+
+    /* Right column */
+    .right {}
+    .section {
+      margin-top: 10px;
+    }
+    .section-title {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #24307a;
+      margin-bottom: 8px;
+    }
+    .section-title::after {
+      content: '';
+      display: block;
+      width: 34px;
+      height: 3px;
+      background: #24307a;
+      margin-top: 6px;
+      opacity: 0.85;
+    }
+    .text {
+      font-size: 10px;
+      line-height: 1.6;
+      color: #0f172a;
+      opacity: 0.92;
+    }
+
+    /* Experience */
+    .exp-item {
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid rgba(15,23,42,0.10);
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .exp-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .exp-head { font-size: 10px; font-weight: 900; letter-spacing: 0.2px; }
+    .exp-sub { margin-top: 2px; font-size: 9px; opacity: 0.8; }
+    .item-description {
+      margin-top: 6px;
+      font-size: 10px;
+      line-height: 1.55;
+      word-wrap: break-word;
+    }
+    .item-description ul { margin-left: 18px; margin-top: 4px; }
+    .item-description li { margin-bottom: 3px; }
+    .item-description p,
+    .item-description div {
+      margin-top: 6px;
+      margin-bottom: 0;
+      list-style: none;
+      display: block;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    @media print {
+      body { background: #ffffff; }
+      .page { margin: 0; padding: 0; background: #ffffff; }
+      .canvas { border: none; }
+      @page { size: A4; margin: 0; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .card, .section, .exp-item, .skill-row, .edu-item { break-inside: avoid; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="canvas">
+      <div class="top">
+        <div class="banner">
+          <div class="banner-inner">
+            <h1>$fullName</h1>
+            <div class="sub">$professionalTitle</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Left column -->
+        <div class="left">
+          <div class="card">
+            <div class="card-title">Contact</div>
+            <div class="card-body">
+              <div class="contact-row"><span class="ico">☎</span><span>$phone</span></div>
+              <div class="contact-row"><span class="ico">✉</span><span>$email</span></div>
+              <div class="contact-row"><span class="ico">⌂</span><span>$location</span></div>
+              <div class="contact-row"><span class="ico">in</span><span>$linkedInUrl</span></div>
+              <div class="contact-row"><span class="ico">↗</span><span>$portfolioUrl</span></div>
+              <div class="contact-row"><span class="ico">⌘</span><span>$githubUrl</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Education</div>
+            <div class="card-body">
+              $EDUCATION_START
+              <div class="edu-item">
+                <div class="edu-top">$degree$fieldOfStudy</div>
+                <div class="edu-inst">$institution</div>
+                <div class="edu-meta">$eduStartDate - $eduEndDate</div>
+                <div class="edu-desc">$description</div>
+              </div>
+              $EDUCATION_END
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Expertise</div>
+            <div class="card-body">
+              $SKILLS_START
+              <div class="skill-row">
+                <div class="skill-name">$skill</div>
+                <div class="bar"><span></span></div>
+              </div>
+              $SKILLS_END
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Certifications</div>
+            <div class="card-body">
+              $CERTIFICATIONS_START
+              <div class="edu-item">
+                <div class="edu-top">$certName</div>
+                <div class="edu-meta">$certIssuer</div>
+                <div class="edu-meta">$certIssueDate</div>
+              </div>
+              $CERTIFICATIONS_END
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div class="right">
+          <div class="section">
+            <div class="section-title">Profile</div>
+            <div class="text">$summary</div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Experience</div>
+            $EXPERIENCE_START
+            <div class="exp-item">
+              <div class="exp-head">$position</div>
+              <div class="exp-sub">$company$expLocation • $startDate - $endDate</div>
+              <div class="item-description">
+                <ul>
+                  $RESPONSIBILITIES_START
+                  <li>$responsibility</li>
+                  $RESPONSIBILITIES_END
+                </ul>
+                $expDescription
+              </div>
+            </div>
+            $EXPERIENCE_END
+          </div>
+
+          <div class="section">
+            <div class="section-title">Achievement</div>
+            <div class="text" style="margin-top: 8px;">
+              <ul style="margin-left: 18px;">
+                $PROJECTS_START
+                <li><strong>$projectName</strong> — $projectDescription</li>
+                $PROJECTS_END
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

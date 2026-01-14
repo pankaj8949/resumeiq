@@ -6,14 +6,20 @@ import '../core/theme/app_theme.dart';
 import '../services/template_loader_service.dart';
 import '../services/template_replacement_service.dart';
 import '../providers/auth_provider.dart';
+import '../models/user_model.dart';
 import 'edit_profile_page.dart';
 import 'resume_building_loading_page.dart';
 
 /// Resume Preview Page - Shows HTML template preview with options to edit profile
 class ResumePreviewPage extends ConsumerStatefulWidget {
   final TemplateMetadata template;
+  final UserModel? overrideUser;
 
-  const ResumePreviewPage({super.key, required this.template});
+  const ResumePreviewPage({
+    super.key,
+    required this.template,
+    this.overrideUser,
+  });
 
   @override
   ConsumerState<ResumePreviewPage> createState() => _ResumePreviewPageState();
@@ -57,7 +63,7 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
   }
 
   void _loadHtmlContent() {
-    final user = ref.read(authNotifierProvider).user;
+    final user = widget.overrideUser ?? ref.read(authNotifierProvider).user;
     final replacedHtml = user != null
         ? TemplateReplacementService.instance.replaceTemplate(
             widget.template.htmlContent,
@@ -79,7 +85,7 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(authNotifierProvider).user;
+    final user = widget.overrideUser ?? ref.watch(authNotifierProvider).user;
     final missingFields = user != null
         ? TemplateReplacementService.instance.getMissingFields(user)
         : <String>[];
@@ -106,7 +112,7 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
       body: Column(
         children: [
           // Missing Fields Warning Banner
-          if (missingFields.isNotEmpty)
+          if (missingFields.isNotEmpty && widget.overrideUser == null)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16.0),
@@ -166,6 +172,7 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
               ),
             ),
           // Profile Update Banner
+          if (widget.overrideUser == null)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16.0),
@@ -280,7 +287,9 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
                       onPressed: _isLoading
                           ? null
                           : () {
-                              final user = ref.read(authNotifierProvider).user;
+                              final user =
+                                  widget.overrideUser ??
+                                  ref.read(authNotifierProvider).user;
                               if (user != null) {
                                 final replacedHtml = TemplateReplacementService
                                     .instance
@@ -299,6 +308,7 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
                                   MaterialPageRoute(
                                     builder: (_) => ResumeBuildingLoadingPage(
                                       template: updatedTemplate,
+                                      overrideUser: user,
                                     ),
                                   ),
                                 );

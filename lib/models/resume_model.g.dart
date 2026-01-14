@@ -123,6 +123,7 @@ _$ExperienceImpl _$$ExperienceImplFromJson(Map<String, dynamic> json) =>
           const [],
       location: json['location'] as String?,
       isCurrentRole: json['isCurrentRole'] as bool?,
+      description: json['description'] as String?,
     );
 
 Map<String, dynamic> _$$ExperienceImplToJson(_$ExperienceImpl instance) =>
@@ -134,6 +135,7 @@ Map<String, dynamic> _$$ExperienceImplToJson(_$ExperienceImpl instance) =>
       'responsibilities': instance.responsibilities,
       'location': instance.location,
       'isCurrentRole': instance.isCurrentRole,
+      'description': instance.description,
     };
 
 _$ProjectImpl _$$ProjectImplFromJson(Map<String, dynamic> json) =>

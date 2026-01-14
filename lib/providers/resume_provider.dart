@@ -99,6 +99,7 @@ class ResumeNotifier extends StateNotifier<ResumeState> {
                 responsibilities: e.responsibilities,
                 location: e.location,
                 isCurrentRole: e.isCurrentRole,
+                description: e.description,
               ))
           .toList(),
       skills: model.skills,
@@ -168,6 +169,7 @@ class ResumeNotifier extends StateNotifier<ResumeState> {
                 responsibilities: e.responsibilities,
                 location: e.location,
                 isCurrentRole: e.isCurrentRole,
+                description: e.description,
               ))
           .toList(),
       skills: entity.skills,
@@ -302,6 +304,7 @@ class ResumeNotifier extends StateNotifier<ResumeState> {
               responsibilities: e.responsibilities,
               location: e.location,
               isCurrentRole: e.isCurrentRole,
+              description: e.description,
             ))
         .toList();
     final educationEntities = education

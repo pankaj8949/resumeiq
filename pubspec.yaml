@@ -96,6 +96,7 @@ flutter:
   assets:
     - .env
     - assets/fonts/
+    - assets/images/
     - lib/templates/
 
   # Custom fonts for PDF generation

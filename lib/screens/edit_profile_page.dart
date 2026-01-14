@@ -519,6 +519,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     final fieldController = TextEditingController(
       text: index != null ? _educationList[index].fieldOfStudy ?? '' : '',
     );
+    final descriptionController = TextEditingController(
+      text: index != null ? _educationList[index].description ?? '' : '',
+    );
     DateTime? startDate = index != null ? _educationList[index].startDate : null;
     DateTime? endDate = index != null ? _educationList[index].endDate : null;
 
@@ -582,6 +585,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     if (date != null) setDialogState(() => endDate = date);
                   },
                 ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  controller: descriptionController,
+                  label: 'Description (optional)',
+                  maxLines: 3,
+                ),
               ],
             ),
           ),
@@ -608,6 +617,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         : fieldController.text.trim(),
                     startDate: startDate,
                     endDate: endDate,
+                    description: descriptionController.text.trim().isEmpty
+                        ? null
+                        : descriptionController.text.trim(),
                   );
                   if (index != null) {
                     _educationList[index] = education;
@@ -640,6 +652,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     );
     final responsibilitiesController = TextEditingController(
       text: index != null ? _experienceList[index].responsibilities.join('\n') : '',
+    );
+    final descriptionController = TextEditingController(
+      text: index != null ? _experienceList[index].description ?? '' : '',
     );
     DateTime? startDate = index != null ? _experienceList[index].startDate : null;
     DateTime? endDate = index != null ? _experienceList[index].endDate : null;
@@ -719,6 +734,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                   label: 'Responsibilities (one per line)',
                   maxLines: 5,
                 ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  controller: descriptionController,
+                  label: 'Description (optional)',
+                  maxLines: 3,
+                ),
               ],
             ),
           ),
@@ -743,6 +764,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     location: locationController.text.trim().isEmpty
                         ? null
                         : locationController.text.trim(),
+                    description: descriptionController.text.trim().isEmpty
+                        ? null
+                        : descriptionController.text.trim(),
                     startDate: startDate,
                     endDate: isCurrent ? null : endDate,
                     isCurrentRole: isCurrent,

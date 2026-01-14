@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="template-title" content="Azure Timeline" />
+  <meta name="template-description" content="Clean resume with a soft blue header, left sidebar for contact/education/skills, and a timeline divider leading into profile + experience. Great for modern corporate roles." />
+  <title>Resume - Azure Timeline</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #ffffff;
+      color: #0f172a;
+      line-height: 1.45;
+    }
+
+    /* A4 */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+
+    /* Top header */
+    .top {
+      background: #dff0ff;
+      padding: 14mm 12mm 12mm 12mm;
+      text-align: center;
+      position: relative;
+    }
+    .top::before,
+    .top::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 52mm;
+      height: 1px;
+      background: rgba(15,23,42,0.25);
+    }
+    .top::before { left: -10mm; }
+    .top::after { right: -10mm; }
+    .name {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      line-height: 1.15;
+      color: #0f172a;
+    }
+    .title {
+      margin-top: 4px;
+      font-size: 11px;
+      opacity: 0.8;
+      letter-spacing: 1px;
+      text-transform: capitalize;
+    }
+
+    /* Layout below header */
+    .layout {
+      display: grid;
+      grid-template-columns: 60mm 10mm 1fr;
+      gap: 8mm;
+      padding: 12mm;
+      align-items: start;
+    }
+
+    /* Left column */
+    .left .section {
+      margin-bottom: 14px;
+    }
+    .left .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #0f172a;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(15,23,42,0.20);
+      margin-bottom: 10px;
+    }
+    .left .badge {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(2,132,199,0.12);
+      color: #075985;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 11px;
+    }
+    .contact-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 9.5px;
+      word-break: break-word;
+    }
+    .c-row {
+      display: grid;
+      grid-template-columns: 16px 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+    .c-ico {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(2,132,199,0.25);
+      color: #075985;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .edu-item { margin-bottom: 10px; break-inside: avoid; page-break-inside: avoid; }
+    .edu-years { font-size: 9px; opacity: 0.75; margin-bottom: 2px; }
+    .edu-inst { font-size: 10px; font-weight: 900; }
+    .edu-meta { font-size: 9.5px; opacity: 0.85; margin-top: 2px; }
+    .edu-desc { font-size: 9.5px; opacity: 0.85; margin-top: 4px; }
+
+    .list { margin-left: 18px; }
+    .list li { font-size: 9.5px; margin-bottom: 5px; line-height: 1.35; }
+
+    /* Middle timeline divider */
+    .timeline {
+      position: relative;
+      min-height: 230mm;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: rgba(15,23,42,0.25);
+      transform: translateX(-50%);
+    }
+    .node {
+      position: relative;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 2px solid #075985;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #075985;
+      font-weight: 900;
+      font-size: 11px;
+      margin: 0 auto;
+    }
+    .node.profile { margin-top: 10px; }
+    .node.exp { margin-top: 64px; }
+    .node.edu { margin-top: 150px; }
+
+    /* Right column */
+    .right .section {
+      margin-bottom: 16px;
+    }
+    .right .section-title {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #0f172a;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(15,23,42,0.20);
+      margin-bottom: 10px;
+    }
+    .profile-text {
+      font-size: 10px;
+      line-height: 1.65;
+      opacity: 0.92;
+    }
+
+    .exp-item {
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid rgba(15,23,42,0.10);
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .exp-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .exp-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+    .exp-company { font-size: 10px; font-weight: 900; }
+    .exp-dates { font-size: 9px; opacity: 0.75; white-space: nowrap; }
+    .exp-role { margin-top: 2px; font-size: 9.5px; font-weight: 700; color: #075985; opacity: 0.95; }
+
+    .item-description {
+      margin-top: 6px;
+      font-size: 10px;
+      line-height: 1.55;
+      word-wrap: break-word;
+    }
+    .item-description ul { margin-left: 18px; margin-top: 4px; }
+    .item-description li { margin-bottom: 3px; }
+    .item-description p,
+    .item-description div {
+      margin-top: 6px;
+      margin-bottom: 0;
+      list-style: none;
+      display: block;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    @media print {
+      body { background: #ffffff; }
+      @page { size: A4; margin: 0; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { margin: 0; border: none; }
+      .section, .exp-item, .edu-item { break-inside: avoid; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top">
+      <div class="name">$fullName</div>
+      <div class="title">$professionalTitle</div>
+    </div>
+
+    <div class="layout">
+      <!-- Left -->
+      <aside class="left">
+        <div class="section">
+          <div class="section-title"><span class="badge">C</span>Contact</div>
+          <div class="contact-list">
+            <div class="c-row"><span class="c-ico">☎</span><span>$phone</span></div>
+            <div class="c-row"><span class="c-ico">✉</span><span>$email</span></div>
+            <div class="c-row"><span class="c-ico">⌂</span><span>$location</span></div>
+            <div class="c-row"><span class="c-ico">↗</span><span>$portfolioUrl</span></div>
+            <div class="c-row"><span class="c-ico">in</span><span>$linkedInUrl</span></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span class="badge">E</span>Education</div>
+          $EDUCATION_START
+          <div class="edu-item">
+            <div class="edu-years">$eduStartDate - $eduEndDate</div>
+            <div class="edu-inst">$institution</div>
+            <div class="edu-meta">$degree$fieldOfStudy</div>
+            <div class="edu-desc">$description</div>
+          </div>
+          $EDUCATION_END
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span class="badge">S</span>Skills</div>
+          <ul class="list">
+            $SKILLS_START
+            <li>$skill</li>
+            $SKILLS_END
+          </ul>
+        </div>
+
+        <div class="section section">
+          <div class="section-title"><span class="badge">L</span>Languages</div>
+          <ul class="list">
+            $CERTIFICATIONS_START
+            <li>$certName$certIssuer</li>
+            $CERTIFICATIONS_END
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Timeline -->
+      <div class="timeline" aria-hidden="true">
+        <div class="node profile">👤</div>
+        <div class="node exp">💼</div>
+        <div class="node edu">🎓</div>
+      </div>
+
+      <!-- Right -->
+      <main class="right">
+        <div class="section">
+          <div class="section-title">Profile Summary</div>
+          <div class="profile-text">$summary</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Work Experience</div>
+          $EXPERIENCE_START
+          <div class="exp-item">
+            <div class="exp-head">
+              <div class="exp-company">$company</div>
+              <div class="exp-dates">$startDate - $endDate</div>
+            </div>
+            <div class="exp-role">$position$expLocation</div>
+            <div class="item-description">
+              <ul>
+                $RESPONSIBILITIES_START
+                <li>$responsibility</li>
+                $RESPONSIBILITIES_END
+              </ul>
+              $expDescription
+            </div>
+          </div>
+          $EXPERIENCE_END
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

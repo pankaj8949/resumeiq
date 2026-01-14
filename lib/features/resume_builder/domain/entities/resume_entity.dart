@@ -111,6 +111,7 @@ class ExperienceEntity extends Equatable {
     this.responsibilities = const [],
     this.location,
     this.isCurrentRole,
+    this.description,
   });
 
   final String company;
@@ -120,9 +121,10 @@ class ExperienceEntity extends Equatable {
   final List<String> responsibilities;
   final String? location;
   final bool? isCurrentRole;
+  final String? description;
 
   @override
-  List<Object?> get props => [company, position, startDate, endDate, responsibilities, location, isCurrentRole];
+  List<Object?> get props => [company, position, startDate, endDate, responsibilities, location, isCurrentRole, description];
 }
 
 class ProjectEntity extends Equatable {

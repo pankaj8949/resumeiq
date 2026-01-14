@@ -1,363 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="template-title" content="Tech Developer">
-    <meta name="template-description" content="Modern tech-focused resume template perfect for software engineers, developers, and technical professionals. Features a vibrant code-inspired design with modern gradients and developer-friendly styling.">
-    <title>Resume - Tech Developer</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="template-title" content="Tech Developer" />
+  <meta name="template-description" content="Modern sidebar resume: dark left panel for profile details and a clean right panel for work experience. Great for IT and tech roles." />
+  <title>Resume - Tech Developer</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #ffffff;
+      color: #111827;
+      line-height: 1.4;
+    }
 
-        body {
-            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-            line-height: 1.6;
-            color: #0d1117;
-            background: white;
-            padding: 0;
-            margin: 0;
-        }
+    /* A4 */
+    .resume {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #ffffff;
+      display: grid;
+      grid-template-columns: 70mm 1fr;
+    }
 
-        .resume-container {
-            max-width: 210mm;
-            margin: 0;
-            background: white;
-            padding: 12mm;
-            width: 100%;
-            height: 297mm;
-            overflow: hidden;
-            position: relative;
-            border-left: 5px solid #58a6ff;
-        }
+    /* Left sidebar */
+    .sidebar {
+      background: #2f2f2f;
+      color: #ffffff;
+      padding: 14mm 10mm;
+    }
+    .sidebar .name {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      line-height: 1.15;
+    }
+    .sidebar .title {
+      margin-top: 4px;
+      font-size: 11px;
+      font-style: italic;
+      opacity: 0.9;
+    }
 
-        .header {
-            background: linear-gradient(135deg, #0969da 0%, #0550ae 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+    .side-contact {
+      margin-top: 10px;
+      font-size: 9.5px;
+      opacity: 0.95;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .side-contact .row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      word-break: break-word;
+    }
+    .ico {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.15);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      flex: 0 0 auto;
+    }
 
-        .header h1 {
-            font-size: 28px;
-            color: white;
-            margin-bottom: 10px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
+    .side-section { margin-top: 16px; }
+    .side-title {
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+    .side-rule {
+      height: 1px;
+      background: rgba(255,255,255,0.25);
+      margin-bottom: 10px;
+    }
 
-        .header .subtitle {
-            font-size: 13px;
-            color: rgba(255,255,255,0.9);
-            margin-bottom: 12px;
-            font-weight: 400;
-        }
+    .edu-item, .cert-item { margin-bottom: 10px; }
+    .edu-degree, .cert-name { font-size: 10px; font-weight: 800; }
+    .edu-inst, .cert-issuer { font-size: 9.5px; opacity: 0.9; margin-top: 2px; }
+    .edu-meta, .cert-date { font-size: 9px; opacity: 0.85; margin-top: 2px; }
+    .edu-desc { font-size: 9px; opacity: 0.88; margin-top: 4px; }
 
-        .contact-info {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            color: rgba(255,255,255,0.95);
-            font-size: 9px;
-        }
+    .skill-list {
+      margin-left: 16px;
+    }
+    .skill-list li {
+      font-size: 9.5px;
+      line-height: 1.45;
+      margin-bottom: 4px;
+    }
 
-        .contact-info span {
-            padding: 5px 12px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
+    /* Right main */
+    .main {
+      padding: 14mm 12mm;
+      background: #ffffff;
+    }
+    .main-title {
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+    .main-rule {
+      height: 2px;
+      background: #111827;
+      opacity: 0.25;
+      margin-bottom: 10px;
+    }
 
-        .section {
-            margin-bottom: 18px;
-        }
+    .exp-item {
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .exp-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 
-        .section-title {
-            font-size: 16px;
-            color: #0969da;
-            border-bottom: 2px solid #58a6ff;
-            padding-bottom: 6px;
-            margin-bottom: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            position: relative;
-            padding-left: 15px;
-        }
+    .exp-role { font-size: 11px; font-weight: 900; }
+    .exp-company-row {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+    .exp-company { font-size: 10px; font-weight: 700; color: #111827; }
+    .exp-meta { font-size: 9px; opacity: 0.85; white-space: nowrap; }
 
-        .section-title::before {
-            content: '&lt;/&gt;';
-            position: absolute;
-            left: 0;
-            color: #58a6ff;
-            font-size: 14px;
-        }
+    .item-description {
+      margin-top: 6px;
+      font-size: 10px;
+      line-height: 1.55;
+      color: #111827;
+      word-wrap: break-word;
+    }
+    .item-description ul {
+      margin-left: 18px;
+      margin-top: 4px;
+    }
+    .item-description li { margin-bottom: 3px; }
+    .item-description p,
+    .item-description div {
+      margin-top: 6px;
+      margin-bottom: 0;
+      color: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      list-style: none;
+      display: block;
+      padding: 0;
+    }
 
-        .summary {
-            background: linear-gradient(135deg, #f6f8fa 0%, #e1e7ed 100%);
-            padding: 12px;
-            border-left: 4px solid #58a6ff;
-            margin-bottom: 12px;
-            font-size: 10px;
-            line-height: 1.6;
-            color: #24292f;
-            border-radius: 5px;
-        }
-
-        .experience-item, .education-item, .project-item {
-            margin-bottom: 12px;
-            padding: 12px;
-            background: linear-gradient(135deg, #f6f8fa 0%, #ffffff 100%);
-            border: 1px solid #d0d7de;
-            border-radius: 6px;
-            border-left: 4px solid #58a6ff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-
-        .item-title {
-            font-size: 12px;
-            font-weight: 700;
-            color: #0969da;
-        }
-
-        .item-subtitle {
-            color: #656d76;
-            font-size: 10px;
-            margin-top: 3px;
-        }
-
-        .item-date {
-            color: #8b949e;
-            font-size: 9px;
-            white-space: nowrap;
-            font-weight: 600;
-            background: #f6f8fa;
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-
-        .item-description {
-            margin-top: 8px;
-            color: #24292f;
-            line-height: 1.5;
-            font-size: 10px;
-        }
-
-        .item-description ul {
-            margin-left: 18px;
-            margin-top: 6px;
-        }
-
-        .item-description li {
-            margin-bottom: 4px;
-        }
-
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 8px;
-        }
-
-        .skill-category {
-            background: linear-gradient(135deg, #f6f8fa 0%, #e1e7ed 100%);
-            padding: 10px;
-            border: 1px solid #d0d7de;
-            border-radius: 6px;
-            border-left: 3px solid #58a6ff;
-        }
-
-        .skill-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .skill-tag {
-            background: linear-gradient(135deg, #0969da 0%, #0550ae 100%);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 8px;
-            font-weight: 600;
-            box-shadow: 0 2px 4px rgba(9,105,218,0.2);
-        }
-
-        .project-item {
-            background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%);
-            border-left-color: #f85149;
-        }
-
-        .tech-stack {
-            display: inline-block;
-            background: linear-gradient(135deg, #0969da 0%, #0550ae 100%);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 8px;
-            margin: 3px 3px 3px 0;
-            font-weight: 600;
-        }
-
-        .certification-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 12px;
-            background: linear-gradient(135deg, #f6f8fa 0%, #e1e7ed 100%);
-            margin-bottom: 8px;
-            border-radius: 6px;
-            border: 1px solid #d0d7de;
-            border-left: 4px solid #58a6ff;
-        }
-
-        .certification-name {
-            font-weight: 700;
-            color: #0969da;
-            font-size: 10px;
-        }
-
-        .certification-issuer {
-            color: #656d76;
-            font-size: 9px;
-            margin-top: 2px;
-        }
-
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-                margin: 0;
-            }
-            .resume-container {
-                padding: 12mm;
-                max-width: 100%;
-                height: 297mm;
-                border-left: 5px solid #58a6ff;
-            }
-            @page {
-                margin: 0;
-                size: A4;
-            }
-        }
-    </style>
+    @media print {
+      body { background: #ffffff; }
+      .resume { margin: 0; }
+      @page { size: A4; margin: 0; }
+      .side-section, .exp-item, .edu-item, .cert-item { break-inside: avoid; page-break-inside: avoid; }
+    }
+  </style>
 </head>
 <body>
-    <div class="resume-container">
-        <div class="header">
-            <h1>$fullName</h1>
-            <div class="contact-info">
-                <span>📧 $email</span>
-                <span>📱 $phone</span>
-                <span>📍 $location</span>
-                <span>🔗 $linkedInUrl</span>
-                <span>🌐 $portfolioUrl</span>
-                <span>💻 $githubUrl</span>
-            </div>
-        </div>
+  <div class="resume">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="name">$fullName</div>
+      <div class="title">$professionalTitle</div>
 
-        <div class="section">
-            <div class="summary">
-                $summary
-            </div>
-        </div>
+      <div class="side-contact">
+        <div class="row"><span class="ico">✉</span><span>$email</span></div>
+        <div class="row"><span class="ico">☎</span><span>$phone</span></div>
+        <div class="row"><span class="ico">⌂</span><span>$location</span></div>
+        <div class="row"><span class="ico">in</span><span>$linkedInUrl</span></div>
+      </div>
 
-        <div class="section">
-            <h2 class="section-title">Professional Experience</h2>
-            $EXPERIENCE_START
-            <div class="experience-item">
-                <div class="item-header">
-                    <div>
-                        <div class="item-title">$position</div>
-                        <div class="item-subtitle">$company$expLocation</div>
-                    </div>
-                    <div class="item-date">$startDate - $endDate</div>
-                </div>
-                <div class="item-description">
-                    <ul>
-                        $RESPONSIBILITIES_START
-                        <li>$responsibility</li>
-                        $RESPONSIBILITIES_END
-                    </ul>
-                </div>
-            </div>
-            $EXPERIENCE_END
+      <div class="side-section">
+        <div class="side-title">Education</div>
+        <div class="side-rule"></div>
+        $EDUCATION_START
+        <div class="edu-item">
+          <div class="edu-degree">$degree$fieldOfStudy</div>
+          <div class="edu-inst">$institution</div>
+          <div class="edu-meta">$eduStartDate - $eduEndDate</div>
+          <div class="edu-desc">$description</div>
         </div>
+        $EDUCATION_END
+      </div>
 
-        <div class="section">
-            <h2 class="section-title">Education</h2>
-            $EDUCATION_START
-            <div class="education-item">
-                <div class="item-header">
-                    <div>
-                        <div class="item-title">$degree$fieldOfStudy</div>
-                        <div class="item-subtitle">$institution</div>
-                    </div>
-                    <div class="item-date">$eduStartDate - $eduEndDate</div>
-                </div>
-                <div class="item-description">
-                    $description
-                </div>
-            </div>
-            $EDUCATION_END
-        </div>
+      <div class="side-section">
+        <div class="side-title">Skills</div>
+        <div class="side-rule"></div>
+        <ul class="skill-list">
+          $SKILLS_START
+          <li>$skill</li>
+          $SKILLS_END
+        </ul>
+      </div>
 
-        <div class="section">
-            <h2 class="section-title">Technical Skills</h2>
-            <div class="skills-grid">
-                <div class="skill-category">
-                    <div class="skill-tags">
-                        $SKILLS_START
-                        <span class="skill-tag">$skill</span>
-                        $SKILLS_END
-                    </div>
-                </div>
-            </div>
+      <div class="side-section">
+        <div class="side-title">Certifications</div>
+        <div class="side-rule"></div>
+        $CERTIFICATIONS_START
+        <div class="cert-item">
+          <div class="cert-name">$certName</div>
+          <div class="cert-issuer">$certIssuer</div>
+          <div class="cert-date">$certIssueDate</div>
         </div>
+        $CERTIFICATIONS_END
+      </div>
+    </aside>
 
-        <div class="section">
-            <h2 class="section-title">Notable Projects</h2>
-            $PROJECTS_START
-            <div class="project-item">
-                <div class="item-header">
-                    <div>
-                        <div class="item-title">$projectName</div>
-                        <div class="item-subtitle">$projectUrl</div>
-                    </div>
-                    <div class="item-date">$projectStartDate - $projectEndDate</div>
-                </div>
-                <div class="item-description">
-                    $projectDescription
-                </div>
-                <div style="margin-top: 8px;">
-                    <span class="tech-stack">$projectTechnologies</span>
-                </div>
-            </div>
-            $PROJECTS_END
-        </div>
+    <!-- Main -->
+    <main class="main">
+      <div class="main-title">Work Experience</div>
+      <div class="main-rule"></div>
 
-        <div class="section">
-            <h2 class="section-title">Certifications</h2>
-            $CERTIFICATIONS_START
-            <div class="certification-item">
-                <div>
-                    <div class="certification-name">$certName</div>
-                    <div class="certification-issuer">$certIssuer</div>
-                </div>
-                <div class="item-date">$certIssueDate</div>
-            </div>
-            $CERTIFICATIONS_END
+      $EXPERIENCE_START
+      <div class="exp-item">
+        <div class="exp-role">$position</div>
+        <div class="exp-company-row">
+          <div class="exp-company">$company$expLocation</div>
+          <div class="exp-meta">$startDate - $endDate</div>
         </div>
-    </div>
+        <div class="item-description">
+          <ul>
+            $RESPONSIBILITIES_START
+            <li>$responsibility</li>
+            $RESPONSIBILITIES_END
+          </ul>
+          $expDescription
+        </div>
+      </div>
+      $EXPERIENCE_END
+    </main>
+  </div>
 </body>
 </html>

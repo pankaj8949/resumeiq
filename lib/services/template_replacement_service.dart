@@ -19,6 +19,16 @@ class TemplateReplacementService {
     );
     result = result.replaceAll('\$email', _escapeHtml(user.email));
 
+    // Professional title (used by some templates under the name).
+    // Prefer the most recent experience position, otherwise empty.
+    final professionalTitle = user.experience.isNotEmpty
+        ? (user.experience.first.position)
+        : '';
+    result = result.replaceAll(
+      '\$professionalTitle',
+      _escapeHtml(professionalTitle),
+    );
+
     // Also handle any remaining {{variable}} syntax as fallback
     result = result.replaceAll(
       '{{fullName}}',
@@ -221,6 +231,7 @@ class TemplateReplacementService {
                 .join('');
           });
         } else {
+          // Remove the entire ul block if no responsibilities
           itemHtml = itemHtml.replaceAll(
             RegExp(
               r'\$RESPONSIBILITIES_START.*?\$RESPONSIBILITIES_END',
@@ -228,6 +239,38 @@ class TemplateReplacementService {
             ),
             '',
           );
+          // Also remove empty ul tags that might be left
+          itemHtml = itemHtml.replaceAll(
+            RegExp(
+              r'<ul[^>]*>\s*</ul>',
+              dotAll: true,
+            ),
+            '',
+          );
+        }
+
+        // Handle description - show if present (must be done after responsibilities)
+        // Format as paragraph text, not list item
+        if (exp.description != null && exp.description!.isNotEmpty) {
+          final marginTop = exp.responsibilities.isNotEmpty ? '8px' : '0px';
+          // If description was authored as bullet lines (common with AI), flatten it into a single paragraph.
+          final normalized = exp.description!
+              // remove leading bullet markers per line: -, •, –, —
+              .replaceAll(
+                RegExp(r'^\s*[-•–—]\s*', multiLine: true),
+                '',
+              )
+              // collapse newlines into spaces
+              .replaceAll(RegExp(r'[\r\n]+'), ' ')
+              // collapse repeated whitespace
+              .replaceAll(RegExp(r'\s{2,}'), ' ')
+              .trim();
+
+          final descHtml =
+              '<p style="margin-top: $marginTop; margin-bottom: 0; padding: 0; display: block;">${_escapeHtml(normalized)}</p>';
+          itemHtml = itemHtml.replaceAll('\$expDescription', descHtml);
+        } else {
+          itemHtml = itemHtml.replaceAll('\$expDescription', '');
         }
 
         buffer.writeln(itemHtml);
@@ -290,7 +333,21 @@ class TemplateReplacementService {
         if (edu.gpa != null) {
           descText += '${descText.isNotEmpty ? ' | ' : ''}GPA: ${edu.gpa}';
         }
-        itemHtml = itemHtml.replaceAll('\$description', descText);
+        if (descText.isNotEmpty) {
+          // Wrap description in a div for proper styling
+          final descHtml = '<div style="margin-top: 0; margin-bottom: 0; color: inherit; font-size: inherit; line-height: inherit;">$descText</div>';
+          itemHtml = itemHtml.replaceAll('\$description', descHtml);
+        } else {
+          // Remove empty description div if no content
+          itemHtml = itemHtml.replaceAll(
+            RegExp(
+              r'<div[^>]*class="[^"]*item-description[^"]*"[^>]*>\s*\$description\s*</div>',
+              dotAll: true,
+            ),
+            '',
+          );
+          itemHtml = itemHtml.replaceAll('\$description', '');
+        }
         itemHtml = itemHtml.replaceAll(
           '\$gpa',
           '',
@@ -330,7 +387,16 @@ class TemplateReplacementService {
     );
 
     if (projects.isEmpty) {
-      return template.replaceAll(pattern, '');
+      // Remove any section wrapper that contains the projects markers (regardless of heading text).
+      return template
+          .replaceAll(
+            RegExp(
+              r'<div[^>]*class="[^"]*section[^"]*"[^>]*>[\s\S]*?\$PROJECTS_START[\s\S]*?\$PROJECTS_END[\s\S]*?</div>',
+              dotAll: true,
+            ),
+            '',
+          )
+          .replaceAll(pattern, '');
     }
 
     return template.replaceAllMapped(pattern, (match) {
@@ -350,10 +416,13 @@ class TemplateReplacementService {
           _escapeHtml(project.url ?? ''),
         );
 
-        itemHtml = itemHtml.replaceAll(
-          '\$projectDescription',
-          _escapeHtml(project.description ?? ''),
-        );
+        // Handle project description - show if present
+        if (project.description != null && project.description!.isNotEmpty) {
+          final descHtml = '<div style="margin-top: 8px; margin-bottom: 0;">${_escapeHtml(project.description!)}</div>';
+          itemHtml = itemHtml.replaceAll('\$projectDescription', descHtml);
+        } else {
+          itemHtml = itemHtml.replaceAll('\$projectDescription', '');
+        }
         itemHtml = itemHtml.replaceAll(
           '\$projectTechnologies',
           _escapeHtml(project.technologies ?? ''),
@@ -385,7 +454,16 @@ class TemplateReplacementService {
     );
 
     if (certifications.isEmpty) {
-      return template.replaceAll(pattern, '');
+      // Remove any section wrapper that contains the certifications markers (regardless of heading text).
+      return template
+          .replaceAll(
+            RegExp(
+              r'<div[^>]*class="[^"]*section[^"]*"[^>]*>[\s\S]*?\$CERTIFICATIONS_START[\s\S]*?\$CERTIFICATIONS_END[\s\S]*?</div>',
+              dotAll: true,
+            ),
+            '',
+          )
+          .replaceAll(pattern, '');
     }
 
     return template.replaceAllMapped(pattern, (match) {

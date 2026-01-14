@@ -162,6 +162,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
               responsibilities: e.responsibilities,
               location: e.location,
               isCurrentRole: e.isCurrentRole,
+              description: e.description,
             ),
           )
           .toList(),
