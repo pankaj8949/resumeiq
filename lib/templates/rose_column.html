@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="template-title" content="Rose Column" />
+  <meta name="template-description" content="Soft rose header with a clean two-column layout. Left sidebar for contact/education/certifications, right column for summary, experience, and skills." />
+  <title>Resume - Rose Column</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #ffffff;
+      color: #111827;
+      line-height: 1.5;
+    }
+
+    /* A4 */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 2px solid rgba(17,24,39,0.35);
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(180deg, #fbe2ef 0%, #f8d6ea 100%);
+      padding: 14mm 12mm 10mm 12mm;
+      text-align: center;
+      border-bottom: 1px solid rgba(17,24,39,0.20);
+    }
+    .name {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 0.6px;
+      color: #9d174d; /* rose-800 */
+      line-height: 1.1;
+    }
+    .title {
+      margin-top: 6px;
+      font-size: 10px;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    /* Body layout */
+    .content {
+      display: grid;
+      grid-template-columns: 62mm 1fr;
+      gap: 10mm;
+      padding: 10mm 12mm 12mm 12mm;
+    }
+
+    /* Headings */
+    .h {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #9d174d;
+      margin-bottom: 8px;
+    }
+    .rule {
+      height: 1px;
+      background: rgba(17,24,39,0.18);
+      margin: 8px 0 10px 0;
+    }
+
+    /* Left column */
+    .left .block { margin-bottom: 14px; }
+    .contact-list {
+      font-size: 9.5px;
+      color: #111827;
+      opacity: 0.92;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      word-break: break-word;
+    }
+    .c-row {
+      display: grid;
+      grid-template-columns: 16px 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+    .c-ico {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      background: rgba(157,23,77,0.10);
+      color: #9d174d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .edu-item { margin-bottom: 10px; break-inside: avoid; page-break-inside: avoid; }
+    .edu-title { font-size: 10px; font-weight: 900; color: #111827; }
+    .edu-meta { margin-top: 2px; font-size: 9.5px; opacity: 0.85; }
+    .edu-desc { margin-top: 4px; font-size: 9.5px; opacity: 0.9; }
+
+    .list { margin-left: 18px; }
+    .list li { margin-bottom: 5px; font-size: 9.5px; line-height: 1.35; }
+
+    /* Right column */
+    .right .block { margin-bottom: 14px; }
+    .summary {
+      font-size: 10px;
+      line-height: 1.6;
+      opacity: 0.92;
+    }
+
+    .exp-item {
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid rgba(17,24,39,0.12);
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .exp-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .exp-role { font-size: 10px; font-weight: 900; color: #111827; }
+    .exp-sub { margin-top: 2px; font-size: 9.5px; opacity: 0.85; }
+    .exp-date { font-size: 9px; opacity: 0.8; margin-top: 2px; }
+
+    .item-description {
+      margin-top: 6px;
+      font-size: 10px;
+      line-height: 1.55;
+      word-wrap: break-word;
+    }
+    .item-description ul { margin-left: 18px; margin-top: 4px; }
+    .item-description li { margin-bottom: 3px; }
+    .item-description p,
+    .item-description div {
+      margin-top: 6px;
+      margin-bottom: 0;
+      list-style: none;
+      display: block;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    /* Skills grid (two columns like screenshot) */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 14px;
+    }
+    .skill {
+      font-size: 9.5px;
+      opacity: 0.92;
+    }
+
+    @media print {
+      body { background: #ffffff; }
+      @page { size: A4; margin: 0; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { margin: 0; }
+      .block, .exp-item, .edu-item { break-inside: avoid; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="name">$fullName</div>
+      <div class="title">$professionalTitle</div>
+    </div>
+
+    <div class="content">
+      <!-- Left -->
+      <aside class="left">
+        <div class="block">
+          <div class="h">Contact</div>
+          <div class="contact-list">
+            <div class="c-row"><span class="c-ico">⌂</span><span>$location</span></div>
+            <div class="c-row"><span class="c-ico">☎</span><span>$phone</span></div>
+            <div class="c-row"><span class="c-ico">✉</span><span>$email</span></div>
+            <div class="c-row"><span class="c-ico">in</span><span>$linkedInUrl</span></div>
+            <div class="c-row"><span class="c-ico">↗</span><span>$portfolioUrl</span></div>
+          </div>
+        </div>
+
+        <div class="block">
+          <div class="h">Education</div>
+          <div class="rule"></div>
+          $EDUCATION_START
+          <div class="edu-item">
+            <div class="edu-title">$degree$fieldOfStudy</div>
+            <div class="edu-meta">$institution</div>
+            <div class="edu-meta">$eduStartDate - $eduEndDate</div>
+            <div class="edu-desc">$description</div>
+          </div>
+          $EDUCATION_END
+        </div>
+
+        <div class="block section">
+          <div class="h">Certifications and Licenses</div>
+          <div class="rule"></div>
+          <ul class="list">
+            $CERTIFICATIONS_START
+            <li><strong>$certName</strong> — $certIssuer ($certIssueDate)</li>
+            $CERTIFICATIONS_END
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Right -->
+      <main class="right">
+        <div class="block">
+          <div class="h">Summary/Objective</div>
+          <div class="rule"></div>
+          <div class="summary">$summary</div>
+        </div>
+
+        <div class="block">
+          <div class="h">Professional Experience</div>
+          <div class="rule"></div>
+          $EXPERIENCE_START
+          <div class="exp-item">
+            <div class="exp-role">$position</div>
+            <div class="exp-sub">$company$expLocation</div>
+            <div class="exp-date">$startDate - $endDate</div>
+            <div class="item-description">
+              <ul>
+                $RESPONSIBILITIES_START
+                <li>$responsibility</li>
+                $RESPONSIBILITIES_END
+              </ul>
+              $expDescription
+            </div>
+          </div>
+          $EXPERIENCE_END
+        </div>
+
+        <div class="block">
+          <div class="h">Skills</div>
+          <div class="rule"></div>
+          <div class="skills-grid">
+            $SKILLS_START
+            <div class="skill">• $skill</div>
+            $SKILLS_END
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

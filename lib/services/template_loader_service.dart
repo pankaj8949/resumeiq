@@ -46,6 +46,12 @@ class TemplateLoaderService {
         'navy_sidebar.html',
         'icon_timeline.html',
         'azure_timeline.html',
+        'pastel_cards.html',
+        'slate_sidebar.html',
+        'teal_executive.html',
+        'rose_column.html',
+        'blue_script.html',
+        'monogram_slate.html',
       ];
 
       for (final fileName in templateFiles) {
@@ -161,12 +167,14 @@ class TemplateLoaderService {
 
     // Category mapping based on template IDs
     final categoryMapping = {
-      'professional': ['modern_professional', 'executive', 'ats_friendly', 'classic_traditional', 'navy_blue', 'charcoal_gray', 'navy_sidebar', 'icon_timeline', 'azure_timeline'],
-      'creative': ['creative_designer', 'minimal_elegant', 'bold_modern'],
+      'professional': ['modern_professional', 'executive', 'ats_friendly', 'classic_traditional', 'navy_blue', 'charcoal_gray', 'navy_sidebar', 'icon_timeline', 'azure_timeline', 'teal_executive'],
+      'creative': ['creative_designer', 'minimal_elegant', 'bold_modern', 'pastel_cards', 'rose_column', 'blue_script'],
       'tech': ['tech_developer', 'ats_friendly'],
       'ats': ['ats_friendly', 'classic_traditional', 'navy_blue', 'navy_sidebar'],
       'academic': ['academic_scholar'],
       'healthcare': ['forest_green'],
+      'content': ['slate_sidebar'],
+      'minimal': ['monogram_slate'],
     };
 
     final categoryTemplates = categoryMapping[categoryId.toLowerCase()] ?? [];

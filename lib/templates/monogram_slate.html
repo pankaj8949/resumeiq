@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="template-title" content="Monogram Slate" />
+  <meta name="template-description" content="Elegant slate layout with a monogram header, left sidebar for essentials, and right column for summary and experience. Clean and professional." />
+  <title>Resume - Monogram Slate</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #ffffff;
+      color: #111827;
+      line-height: 1.5;
+    }
+
+    /* A4 */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 2px solid rgba(0,0,0,0.15);
+      overflow: hidden;
+    }
+
+    /* Top bar */
+    .topbar {
+      display: grid;
+      grid-template-columns: 58mm 1fr;
+      align-items: center;
+      background: #2f2f2f;
+      color: #ffffff;
+      min-height: 18mm;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8mm 0;
+    }
+    .monogram {
+      width: 40mm;
+      height: 40mm;
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.9);
+      position: relative;
+    }
+    .monogram::before,
+    .monogram::after {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.22);
+    }
+    .monogram span {
+      font-size: 16px;
+      transform: translateY(1px);
+    }
+
+    .topbar-right {
+      background: #e9e6e0;
+      color: #111827;
+      padding: 10mm 12mm 8mm 12mm;
+      border-left: 2px solid rgba(0,0,0,0.15);
+    }
+    .name {
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+    .title {
+      margin-top: 4px;
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    /* Body */
+    .content {
+      display: grid;
+      grid-template-columns: 58mm 1fr;
+      min-height: calc(297mm - 18mm);
+    }
+
+    /* Left sidebar */
+    .sidebar {
+      background: #f1efea;
+      padding: 10mm 10mm;
+      border-right: 2px solid rgba(0,0,0,0.15);
+    }
+    .side-section { margin-bottom: 14px; }
+    .side-title {
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+      color: #111827;
+    }
+
+    .contact-list {
+      font-size: 9.5px;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      word-break: break-word;
+    }
+    .c-row {
+      display: grid;
+      grid-template-columns: 16px 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+    .c-ico {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 900;
+      color: rgba(0,0,0,0.65);
+    }
+
+    .edu-item { margin-bottom: 10px; break-inside: avoid; page-break-inside: avoid; }
+    .edu-inst { font-size: 10px; font-weight: 900; }
+    .edu-meta { margin-top: 2px; font-size: 9px; opacity: 0.85; }
+    .edu-desc { margin-top: 4px; font-size: 9.5px; opacity: 0.9; }
+
+    .list { margin-left: 18px; }
+    .list li { font-size: 9.5px; margin-bottom: 5px; line-height: 1.35; }
+
+    /* Right main */
+    .main {
+      background: #ffffff;
+      padding: 10mm 12mm;
+    }
+    .section { margin-bottom: 14px; }
+    .section-title {
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #111827;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(0,0,0,0.18);
+      margin-bottom: 10px;
+    }
+    .summary {
+      font-size: 10px;
+      line-height: 1.6;
+      opacity: 0.92;
+    }
+
+    .exp-item {
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.10);
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .exp-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .exp-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+    .exp-role { font-size: 10px; font-weight: 900; }
+    .exp-dates { font-size: 9px; opacity: 0.75; white-space: nowrap; }
+    .exp-sub { margin-top: 2px; font-size: 9.5px; opacity: 0.85; }
+
+    .item-description {
+      margin-top: 6px;
+      font-size: 10px;
+      line-height: 1.55;
+      word-wrap: break-word;
+    }
+    .item-description ul { margin-left: 18px; margin-top: 4px; }
+    .item-description li { margin-bottom: 3px; }
+    .item-description p,
+    .item-description div {
+      margin-top: 6px;
+      margin-bottom: 0;
+      list-style: none;
+      display: block;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    @media print {
+      body { background: #ffffff; }
+      @page { size: A4; margin: 0; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { margin: 0; border: none; }
+      .section, .exp-item, .edu-item, .side-section { break-inside: avoid; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="monogram"><span>$initials</span></div>
+      </div>
+      <div class="topbar-right">
+        <div class="name">$fullName</div>
+        <div class="title">$professionalTitle</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Left -->
+      <aside class="sidebar">
+        <div class="side-section">
+          <div class="side-title">Contact</div>
+          <div class="contact-list">
+            <div class="c-row"><span class="c-ico">☎</span><span>$phone</span></div>
+            <div class="c-row"><span class="c-ico">✉</span><span>$email</span></div>
+            <div class="c-row"><span class="c-ico">⌂</span><span>$location</span></div>
+            <div class="c-row"><span class="c-ico">in</span><span>$linkedInUrl</span></div>
+          </div>
+        </div>
+
+        <div class="side-section">
+          <div class="side-title">Education</div>
+          $EDUCATION_START
+          <div class="edu-item">
+            <div class="edu-inst">$institution</div>
+            <div class="edu-meta">$degree$fieldOfStudy</div>
+            <div class="edu-meta">$eduStartDate - $eduEndDate</div>
+            <div class="edu-desc">$description</div>
+          </div>
+          $EDUCATION_END
+        </div>
+
+        <div class="side-section">
+          <div class="side-title">Skills</div>
+          <ul class="list">
+            $SKILLS_START
+            <li>$skill</li>
+            $SKILLS_END
+          </ul>
+        </div>
+
+        <div class="side-section">
+          <div class="side-title">Certifications</div>
+          <ul class="list">
+            $CERTIFICATIONS_START
+            <li>$certName</li>
+            $CERTIFICATIONS_END
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Right -->
+      <main class="main">
+        <div class="section">
+          <div class="section-title">Summary/Objective</div>
+          <div class="summary">$summary</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Work Experience</div>
+          $EXPERIENCE_START
+          <div class="exp-item">
+            <div class="exp-head">
+              <div class="exp-role">$position</div>
+              <div class="exp-dates">$startDate - $endDate</div>
+            </div>
+            <div class="exp-sub">$company$expLocation</div>
+            <div class="item-description">
+              <ul>
+                $RESPONSIBILITIES_START
+                <li>$responsibility</li>
+                $RESPONSIBILITIES_END
+              </ul>
+              $expDescription
+            </div>
+          </div>
+          $EXPERIENCE_END
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

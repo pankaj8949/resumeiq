@@ -19,6 +19,10 @@ class TemplateReplacementService {
     );
     result = result.replaceAll('\$email', _escapeHtml(user.email));
 
+    // Initials (used by some templates as a monogram)
+    final initials = _getInitials(user.displayName ?? '');
+    result = result.replaceAll('\$initials', _escapeHtml(initials));
+
     // Professional title (used by some templates under the name).
     // Prefer the most recent experience position, otherwise empty.
     final professionalTitle = user.experience.isNotEmpty
@@ -81,6 +85,21 @@ class TemplateReplacementService {
     result = _removeAllMustacheSyntax(result);
 
     return result;
+  }
+
+  String _getInitials(String fullName) {
+    final cleaned = fullName.trim();
+    if (cleaned.isEmpty) return '';
+    final parts =
+        cleaned.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.isEmpty) return '';
+    if (parts.length == 1) {
+      final s = parts.first;
+      return s.length >= 2 ? s.substring(0, 2).toUpperCase() : s[0].toUpperCase();
+    }
+    final first = parts.first[0];
+    final last = parts.last[0];
+    return (first + last).toUpperCase();
   }
 
   /// Clean up empty elements and unreplaced variables
