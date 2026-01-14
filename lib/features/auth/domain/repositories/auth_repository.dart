@@ -3,7 +3,6 @@ import '../../../../core/errors/failures.dart';
 import '../../../resume_builder/domain/entities/resume_entity.dart';
 import 'package:dartz/dartz.dart';
 
-/// Authentication repository interface
 abstract class AuthRepository {
   /// Sign in with Google
   Future<Either<Failure, UserEntity>> signInWithGoogle();

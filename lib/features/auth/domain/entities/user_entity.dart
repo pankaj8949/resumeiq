@@ -62,4 +62,3 @@ class UserEntity extends Equatable {
         updatedAt,
       ];
 }
-

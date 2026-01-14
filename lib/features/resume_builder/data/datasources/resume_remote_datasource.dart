@@ -47,8 +47,6 @@ class ResumeRemoteDataSourceImpl implements ResumeRemoteDataSource {
     try {
       final updatedResume = resume.copyWith(updatedAt: DateTime.now());
 
-      // Use set with merge to ensure all fields are updated, including lists
-      // This is safer than .update() which only updates provided fields
       await _firestore
           .collection(FirebaseConstants.resumes)
           .doc(resume.id)
@@ -79,8 +77,6 @@ class ResumeRemoteDataSourceImpl implements ResumeRemoteDataSource {
   @override
   Future<List<model.ResumeModel>> getUserResumes(String userId) async {
     try {
-      // Query without orderBy to avoid requiring a composite index
-      // We'll sort in memory instead
       final querySnapshot = await _firestore
           .collection(FirebaseConstants.resumes)
           .where('userId', isEqualTo: userId)
@@ -112,5 +108,3 @@ class ResumeRemoteDataSourceImpl implements ResumeRemoteDataSource {
     }
   }
 }
-
-

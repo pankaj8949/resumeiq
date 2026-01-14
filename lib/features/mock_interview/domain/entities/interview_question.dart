@@ -1,4 +1,3 @@
-/// Entity representing an interview question with multiple choice options
 class InterviewQuestion {
   final String question;
   final List<String> options; // Should always have 4 options
@@ -30,4 +29,3 @@ class InterviewQuestion {
     );
   }
 }
-

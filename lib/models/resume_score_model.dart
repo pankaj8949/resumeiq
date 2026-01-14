@@ -73,4 +73,3 @@ class TimestampConverter implements JsonConverter<DateTime?, dynamic> {
     return Timestamp.fromDate(object);
   }
 }
-

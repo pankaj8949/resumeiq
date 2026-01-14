@@ -110,8 +110,6 @@ Requirements:
 
   @override
   Future<Either<Failure, String>> generatePDF(ResumeEntity resume) async {
-    // PDF generation is now handled directly in the UI using flutter_to_pdf
-    // This method is kept for interface compatibility but is not used
     return const Left(ApiFailure(
       message: 'PDF generation should be handled in the UI layer using flutter_to_pdf',
       code: 'USE_UI_EXPORT',
