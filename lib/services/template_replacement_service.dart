@@ -23,14 +23,20 @@ class TemplateReplacementService {
     final initials = _getInitials(user.displayName ?? '');
     result = result.replaceAll('\$initials', _escapeHtml(initials));
 
-    // Professional title (used by some templates under the name).
-    // Prefer the most recent experience position, otherwise empty.
-    final professionalTitle = user.experience.isNotEmpty
-        ? (user.experience.first.position)
-        : '';
+    // Professional title (used by templates under the name).
+    // Prefer current designation, otherwise most recent experience position.
+    final professionalTitle = (user.currentDesignation ?? '').trim().isNotEmpty
+        ? user.currentDesignation!.trim()
+        : (user.experience.isNotEmpty ? user.experience.first.position : '');
     result = result.replaceAll(
       '\$professionalTitle',
       _escapeHtml(professionalTitle),
+    );
+
+    // Current designation (explicit placeholder)
+    result = result.replaceAll(
+      '\$currentDesignation',
+      _escapeHtml((user.currentDesignation ?? '').trim()),
     );
 
     // Also handle any remaining {{variable}} syntax as fallback
@@ -39,6 +45,10 @@ class TemplateReplacementService {
       _escapeHtml(user.displayName ?? ''),
     );
     result = result.replaceAll('{{email}}', _escapeHtml(user.email));
+    result = result.replaceAll(
+      '{{currentDesignation}}',
+      _escapeHtml((user.currentDesignation ?? '').trim()),
+    );
 
     // Handle email Mustache conditionals - email is always present, so replace the conditionals
     result = result.replaceAll(RegExp(r'\{\{#email\}\}', dotAll: true), '');
@@ -613,6 +623,9 @@ class TemplateReplacementService {
     }
     if (user.location == null || user.location!.isEmpty) {
       missing.add('Location');
+    }
+    if (user.currentDesignation == null || user.currentDesignation!.isEmpty) {
+      missing.add('Current Designation');
     }
     if (user.summary == null || user.summary!.isEmpty) {
       missing.add('Professional Summary');

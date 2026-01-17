@@ -100,7 +100,7 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> {
         .length;
 
     return Container(
-      color: Colors.white,
+      color: AppTheme.backgroundColor,
       child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
@@ -110,12 +110,12 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> {
               // Header Section (now scrollable with page)
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
-                color: Colors.white,
+                color: Colors.transparent,
                 child: Row(
                   children: [
                     CircleAvatar(
                       radius: 24,
-                      backgroundColor: Colors.grey.shade200,
+                      backgroundColor: AppTheme.surfaceColor,
                       backgroundImage: user?.photoUrl != null
                           ? NetworkImage(user!.photoUrl!)
                           : null,
@@ -157,7 +157,7 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> {
                             'Welcome Back',
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  color: AppTheme.textSecondary,
+                                  color: AppTheme.textTertiary,
                                   fontSize: 12,
                                 ),
                           ),
@@ -171,7 +171,7 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.grey.shade300,
+                            color: AppTheme.borderColor,
                             width: 1,
                           ),
                         ),
@@ -381,15 +381,9 @@ class _StatCard extends StatelessWidget {
         return Container(
           padding: EdgeInsets.all(padding),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.cardColor,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            border: Border.all(color: AppTheme.borderColor),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

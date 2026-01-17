@@ -384,6 +384,39 @@ class ProfilePage extends ConsumerWidget {
                           label: 'Email',
                           value: user.email,
                         ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          child: OutlinedButton.icon(
+                            onPressed: () async {
+                              final success = await ref
+                                  .read(authNotifierProvider.notifier)
+                                  .sendPasswordResetEmail();
+                              if (!context.mounted) return;
+                              if (success) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Password reset email sent. Check your inbox.',
+                                    ),
+                                    backgroundColor: AppTheme.successColor,
+                                  ),
+                                );
+                              } else {
+                                final err = ref.read(authNotifierProvider).error;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      err ?? 'Failed to send reset email',
+                                    ),
+                                    backgroundColor: AppTheme.errorColor,
+                                  ),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.lock_reset),
+                            label: const Text('Reset Password'),
+                          ),
+                        ),
                         if (user.createdAt != null)
                           _ProfileInfoTile(
                             icon: Icons.calendar_today,
@@ -429,7 +462,7 @@ class ProfilePage extends ConsumerWidget {
                       icon: const Icon(Icons.logout),
                       label: const Text('Logout'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.errorColor,
+                        backgroundColor: const Color(0xFF1337EC),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(

@@ -117,7 +117,7 @@ class _ResumeBuilderPageState extends ConsumerState<ResumeBuilderPage> {
               colors: [
                 templateColor.withOpacity(0.1),
                 templateColor.withOpacity(0.05),
-                Colors.white,
+                AppTheme.cardColor,
               ],
             ),
           ),
@@ -197,7 +197,8 @@ class _ResumeBuilderPageState extends ConsumerState<ResumeBuilderPage> {
       appBar: AppBar(
         title: const Text('Resume Builder'),
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.backgroundColor,
+        foregroundColor: Colors.white,
         centerTitle: false,
       ),
       body: _isLoading

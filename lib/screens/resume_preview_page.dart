@@ -101,7 +101,8 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
       appBar: AppBar(
         title: Text(widget.template.title),
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.backgroundColor,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.close),
@@ -254,11 +255,11 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
           Container(
             padding: const EdgeInsets.all(20.0),
             decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: Colors.grey.shade200)),
+              color: AppTheme.backgroundColor,
+              border: const Border(top: BorderSide(color: AppTheme.borderColor)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withOpacity(0.25),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
@@ -272,7 +273,7 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
                       onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: BorderSide(color: Colors.grey.shade300),
+                        side: const BorderSide(color: AppTheme.borderColor),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),

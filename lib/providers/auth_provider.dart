@@ -165,6 +165,43 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 
+  Future<bool> sendPasswordResetEmail() async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final authUser = FirebaseAuth.instance.currentUser;
+      final providers = authUser?.providerData.map((p) => p.providerId).toList() ?? const <String>[];
+      if (authUser != null && providers.isNotEmpty && !providers.contains('password')) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'This account uses ${providers.join(", ")} sign-in. Password reset is only available for Email/Password accounts.',
+        );
+        return false;
+      }
+
+      final email = authUser?.email ?? state.user?.email;
+      if (email == null || email.trim().isEmpty) {
+        state = state.copyWith(isLoading: false, error: 'Email not available');
+        return false;
+      }
+
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email.trim());
+      state = state.copyWith(isLoading: false);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: '${e.message ?? 'Failed to send password reset email'} (code: ${e.code})',
+      );
+      return false;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to send password reset email',
+      );
+      return false;
+    }
+  }
+
   Future<bool> updateProfile({
     String? displayName,
     String? photoUrl,
