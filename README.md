@@ -1,4 +1,4 @@
-# ResumeIQ
+# ResumeAI
 
 AI-powered resume builder and interview preparation app built with Flutter.
 

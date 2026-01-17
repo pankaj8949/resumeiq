@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../models/resume_model.dart';
 import '../features/auth/domain/usecases/sign_in_usecase.dart';
+import '../features/auth/domain/usecases/sign_in_with_email_usecase.dart';
 import '../features/auth/domain/usecases/sign_out_usecase.dart';
+import '../features/auth/domain/usecases/sign_up_with_email_usecase.dart';
 import '../features/auth/domain/repositories/auth_repository.dart';
 import '../features/resume_builder/domain/entities/resume_entity.dart';
 import '../features/auth/data/repositories/auth_repository_impl.dart';
@@ -36,12 +38,20 @@ class AuthState {
 
 /// Auth state notifier
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier(this._signInUseCase, this._signOutUseCase, this._repository)
+  AuthNotifier(
+    this._signInUseCase,
+    this._signInWithEmailUseCase,
+    this._signUpWithEmailUseCase,
+    this._signOutUseCase,
+    this._repository,
+  )
     : super(const AuthState()) {
     _init();
   }
 
   final SignInUseCase _signInUseCase;
+  final SignInWithEmailUseCase _signInWithEmailUseCase;
+  final SignUpWithEmailUseCase _signUpWithEmailUseCase;
   final SignOutUseCase _signOutUseCase;
   final AuthRepository _repository;
 
@@ -98,6 +108,48 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 
+  Future<bool> signUpWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    final result = await _signUpWithEmailUseCase(email: email, password: password);
+    return result.fold(
+      (failure) {
+        state = state.copyWith(isLoading: false, error: failure.message);
+        return false;
+      },
+      (user) {
+        state = state.copyWith(
+          user: UserModel.fromEntity(user),
+          isLoading: false,
+        );
+        return true;
+      },
+    );
+  }
+
+  Future<bool> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    final result = await _signInWithEmailUseCase(email: email, password: password);
+    return result.fold(
+      (failure) {
+        state = state.copyWith(isLoading: false, error: failure.message);
+        return false;
+      },
+      (user) {
+        state = state.copyWith(
+          user: UserModel.fromEntity(user),
+          isLoading: false,
+        );
+        return true;
+      },
+    );
+  }
+
   Future<bool> signOut() async {
     state = state.copyWith(isLoading: true, clearError: true);
     final result = await _signOutUseCase();
@@ -118,6 +170,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String? photoUrl,
     String? phone,
     String? location,
+    String? currentDesignation,
     String? linkedInUrl,
     String? portfolioUrl,
     String? githubUrl,
@@ -135,6 +188,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       photoUrl: photoUrl,
       phone: phone,
       location: location,
+      currentDesignation: currentDesignation,
       linkedInUrl: linkedInUrl,
       portfolioUrl: portfolioUrl,
       githubUrl: githubUrl,
@@ -226,6 +280,14 @@ final signInUseCaseProvider = Provider<SignInUseCase>((ref) {
   return SignInUseCase(repository: ref.watch(authRepositoryProvider));
 });
 
+final signInWithEmailUseCaseProvider = Provider<SignInWithEmailUseCase>((ref) {
+  return SignInWithEmailUseCase(repository: ref.watch(authRepositoryProvider));
+});
+
+final signUpWithEmailUseCaseProvider = Provider<SignUpWithEmailUseCase>((ref) {
+  return SignUpWithEmailUseCase(repository: ref.watch(authRepositoryProvider));
+});
+
 final signOutUseCaseProvider = Provider<SignOutUseCase>((ref) {
   return SignOutUseCase(repository: ref.watch(authRepositoryProvider));
 });
@@ -236,6 +298,8 @@ final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((
 ) {
   return AuthNotifier(
     ref.watch(signInUseCaseProvider),
+    ref.watch(signInWithEmailUseCaseProvider),
+    ref.watch(signUpWithEmailUseCaseProvider),
     ref.watch(signOutUseCaseProvider),
     ref.watch(authRepositoryProvider),
   );

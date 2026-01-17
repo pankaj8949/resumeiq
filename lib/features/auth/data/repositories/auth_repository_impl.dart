@@ -24,6 +24,38 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, UserEntity>> signUpWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final user = await _remoteDataSource.signUpWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return Right(user);
+    } catch (e) {
+      return Left(ErrorHandler.mapExceptionToFailure(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final user = await _remoteDataSource.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return Right(user);
+    } catch (e) {
+      return Left(ErrorHandler.mapExceptionToFailure(e));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> signOut() async {
     try {
       await _remoteDataSource.signOut();
@@ -50,6 +82,7 @@ class AuthRepositoryImpl implements AuthRepository {
     String? photoUrl,
     String? phone,
     String? location,
+    String? currentDesignation,
     String? linkedInUrl,
     String? portfolioUrl,
     String? githubUrl,
@@ -66,6 +99,7 @@ class AuthRepositoryImpl implements AuthRepository {
         photoUrl: photoUrl,
         phone: phone,
         location: location,
+        currentDesignation: currentDesignation,
         linkedInUrl: linkedInUrl,
         portfolioUrl: portfolioUrl,
         githubUrl: githubUrl,

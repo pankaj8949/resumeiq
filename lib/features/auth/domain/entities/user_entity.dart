@@ -10,6 +10,7 @@ class UserEntity extends Equatable {
     this.photoUrl,
     this.phone,
     this.location,
+    this.currentDesignation,
     this.linkedInUrl,
     this.portfolioUrl,
     this.githubUrl,
@@ -29,6 +30,7 @@ class UserEntity extends Equatable {
   final String? photoUrl;
   final String? phone;
   final String? location;
+  final String? currentDesignation;
   final String? linkedInUrl;
   final String? portfolioUrl;
   final String? githubUrl;
@@ -49,6 +51,7 @@ class UserEntity extends Equatable {
         photoUrl,
         phone,
         location,
+        currentDesignation,
         linkedInUrl,
         portfolioUrl,
         githubUrl,

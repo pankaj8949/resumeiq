@@ -16,7 +16,7 @@ class DashboardPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ResumeIQ'),
+        title: const Text('ResumeAI'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),

@@ -1,11 +1,11 @@
 {
-    "name": "resumeiq",
-    "short_name": "resumeiq",
+    "name": "ResumeAI",
+    "short_name": "ResumeAI",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#101322",
+    "theme_color": "#101322",
+    "description": "AI-powered resume builder and interview preparation app.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -1,4 +1,4 @@
-# ResumeIQ Setup Guide
+# ResumeAI Setup Guide
 
 ## Quick Start
 

@@ -7,6 +7,18 @@ abstract class AuthRepository {
   /// Sign in with Google
   Future<Either<Failure, UserEntity>> signInWithGoogle();
 
+  /// Sign up with email/password
+  Future<Either<Failure, UserEntity>> signUpWithEmailAndPassword({
+    required String email,
+    required String password,
+  });
+
+  /// Sign in with email/password
+  Future<Either<Failure, UserEntity>> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  });
+
   /// Sign out
   Future<Either<Failure, void>> signOut();
 
@@ -19,6 +31,7 @@ abstract class AuthRepository {
     String? photoUrl,
     String? phone,
     String? location,
+    String? currentDesignation,
     String? linkedInUrl,
     String? portfolioUrl,
     String? githubUrl,

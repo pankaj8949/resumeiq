@@ -58,8 +58,17 @@ class Validators {
       return 'Phone number is required';
     }
 
-    final phoneRegex = RegExp(r'^\+?[1-9]\d{1,14}$');
-    if (!phoneRegex.hasMatch(value.replaceAll(RegExp(r'[\s-]'), ''))) {
+    final trimmed = value.trim();
+
+    // Allow common formatting (spaces, dashes, parentheses), validate by digit count.
+    // Supports local numbers (leading 0) and international numbers (+countrycode).
+    if (trimmed.contains('+') && !trimmed.startsWith('+')) {
+      return 'Please enter a valid phone number';
+    }
+
+    final digits = trimmed.replaceAll(RegExp(r'\D'), '');
+    // E.164 max is 15 digits; allow shorter local numbers too.
+    if (digits.length < 7 || digits.length > 15) {
       return 'Please enter a valid phone number';
     }
 
@@ -161,8 +170,14 @@ class Validators {
     if (value == null || value.trim().isEmpty) {
       return null; // Phone is optional
     }
-    final phoneRegex = RegExp(r'^\+?[1-9]\d{1,14}$');
-    if (!phoneRegex.hasMatch(value.replaceAll(RegExp(r'[\s-]'), ''))) {
+
+    final trimmed = value.trim();
+    if (trimmed.contains('+') && !trimmed.startsWith('+')) {
+      return 'Please enter a valid phone number';
+    }
+
+    final digits = trimmed.replaceAll(RegExp(r'\D'), '');
+    if (digits.length < 7 || digits.length > 15) {
       return 'Please enter a valid phone number';
     }
     return null;

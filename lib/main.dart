@@ -15,16 +15,16 @@ void main() async {
   // Initialize Firebase
   await FirebaseConfig.initialize();
 
-  runApp(const ProviderScope(child: ResumeIQApp()));
+  runApp(const ProviderScope(child: ResumeAIApp()));
 }
 
-class ResumeIQApp extends StatelessWidget {
-  const ResumeIQApp({super.key});
+class ResumeAIApp extends StatelessWidget {
+  const ResumeAIApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ResumeIQ',
+      title: 'ResumeAI',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: const AuthWrapper(),
@@ -49,7 +49,9 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
         user.phone != null &&
         user.phone!.isNotEmpty &&
         user.location != null &&
-        user.location!.isNotEmpty;
+        user.location!.isNotEmpty &&
+        user.currentDesignation != null &&
+        user.currentDesignation!.isNotEmpty;
   }
 
   @override

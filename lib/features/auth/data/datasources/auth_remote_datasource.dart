@@ -11,6 +11,16 @@ import '../../../resume_builder/domain/entities/resume_entity.dart';
 abstract class AuthRemoteDataSource {
   Future<UserEntity> signInWithGoogle();
 
+  Future<UserEntity> signUpWithEmailAndPassword({
+    required String email,
+    required String password,
+  });
+
+  Future<UserEntity> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  });
+
   Future<void> signOut();
 
   Future<UserEntity?> getCurrentUser();
@@ -20,6 +30,7 @@ abstract class AuthRemoteDataSource {
     String? photoUrl,
     String? phone,
     String? location,
+    String? currentDesignation,
     String? linkedInUrl,
     String? portfolioUrl,
     String? githubUrl,
@@ -105,6 +116,67 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
+  Future<UserEntity> signUpWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final user = userCredential.user;
+      if (user == null) {
+        throw const AuthException(
+          message: 'Sign up failed',
+          code: 'SIGN_UP_FAILED',
+        );
+      }
+
+      // Create user document in Firestore if it doesn't exist
+      return await _getUserFromFirestore(user.uid);
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(
+        message: e.message ?? 'Sign up failed',
+        code: e.code,
+      );
+    } catch (e) {
+      throw AuthException(message: e.toString(), code: 'UNKNOWN');
+    }
+  }
+
+  @override
+  Future<UserEntity> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final user = userCredential.user;
+      if (user == null) {
+        throw const AuthException(
+          message: 'Sign in failed',
+          code: 'SIGN_IN_FAILED',
+        );
+      }
+
+      return await _getUserFromFirestore(user.uid);
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(
+        message: e.message ?? 'Sign in failed',
+        code: e.code,
+      );
+    } catch (e) {
+      throw AuthException(message: e.toString(), code: 'UNKNOWN');
+    }
+  }
+
+  @override
   Future<void> signOut() async {
     try {
       await Future.wait([_firebaseAuth.signOut(), _googleSignIn.signOut()]);
@@ -134,6 +206,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? photoUrl,
     String? phone,
     String? location,
+    String? currentDesignation,
     String? linkedInUrl,
     String? portfolioUrl,
     String? githubUrl,
@@ -172,6 +245,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
       if (location != null) {
         updateData['location'] = location;
+      }
+      if (currentDesignation != null) {
+        updateData['currentDesignation'] = currentDesignation;
       }
       if (linkedInUrl != null) {
         updateData['linkedInUrl'] = linkedInUrl;
@@ -240,7 +316,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final firebaseUser = _firebaseAuth.currentUser;
 
       if (!doc.exists && firebaseUser != null) {
-        // Create user document if it doesn't exist (first time Google sign-in)
+        // Create user document if it doesn't exist (first time sign-in)
         final userModel = UserModel(
           id: uid,
           email: firebaseUser.email ?? '',

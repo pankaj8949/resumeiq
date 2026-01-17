@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import '../services/firebase_ai_service.dart';
 import '../models/user_model.dart';
 import '../models/resume_model.dart';
 import '../core/theme/app_theme.dart';
@@ -21,11 +26,21 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
   bool _isSubmitting = false;
   bool _hasInitialized = false;
 
+  // Photo upload
+  bool _isUploadingPhoto = false;
+  String? _photoUrl;
+  Uint8List? _photoBytes;
+
+  // AI summary generation
+  bool _isGeneratingSummary = false;
+  late final FirebaseAIService _aiService = FirebaseAIService();
+
   // Step 1: Basic Info + Contact & Summary
   final _step1FormKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _locationController = TextEditingController();
+  final _currentDesignationController = TextEditingController();
   final _linkedInUrlController = TextEditingController();
   final _portfolioUrlController = TextEditingController();
   final _githubUrlController = TextEditingController();
@@ -54,10 +69,12 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
       _fullNameController.text = user.displayName ?? '';
       _phoneController.text = user.phone ?? '';
       _locationController.text = user.location ?? '';
+      _currentDesignationController.text = user.currentDesignation ?? '';
       _linkedInUrlController.text = user.linkedInUrl ?? '';
       _portfolioUrlController.text = user.portfolioUrl ?? '';
       _githubUrlController.text = user.githubUrl ?? '';
       _summaryController.text = user.summary ?? '';
+      _photoUrl = user.photoUrl;
       
       // Convert entities to models for Step 2
       _educationList.addAll((user.education).map((e) => Education(
@@ -99,11 +116,113 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
     }
   }
 
+  Future<void> _pickAndUploadPhoto() async {
+    if (_isUploadingPhoto || _isSubmitting) return;
+
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You must be signed in to upload a photo.'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+      return;
+    }
+
+    try {
+      setState(() => _isUploadingPhoto = true);
+
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['jpg', 'jpeg', 'png'],
+        withData: true,
+      );
+
+      if (result == null || result.files.isEmpty) {
+        setState(() => _isUploadingPhoto = false);
+        return;
+      }
+
+      final file = result.files.first;
+      final maxBytes = 5 * 1024 * 1024;
+      if (file.size > maxBytes) {
+        setState(() => _isUploadingPhoto = false);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Max file size is 5MB.'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+        return;
+      }
+
+      final bytes = file.bytes;
+      if (bytes == null) {
+        setState(() => _isUploadingPhoto = false);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to read selected image. Please try again.'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+        return;
+      }
+
+      final ext = (file.extension ?? 'jpg').toLowerCase();
+      final contentType = ext == 'png' ? 'image/png' : 'image/jpeg';
+
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('profile_images')
+          .child(uid)
+          .child('photo_${DateTime.now().millisecondsSinceEpoch}.$ext');
+
+      final task = storageRef.putData(
+        bytes,
+        SettableMetadata(contentType: contentType),
+      );
+
+      await task;
+      final url = await storageRef.getDownloadURL();
+
+      if (!mounted) return;
+      setState(() {
+        _photoUrl = url;
+        _photoBytes = bytes;
+        _isUploadingPhoto = false;
+      });
+
+      // Web can be slow to reflect newly uploaded images; bytes preview helps.
+      if (kIsWeb) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Photo uploaded.'),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isUploadingPhoto = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Photo upload failed: $e'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _fullNameController.dispose();
     _phoneController.dispose();
     _locationController.dispose();
+    _currentDesignationController.dispose();
     _linkedInUrlController.dispose();
     _portfolioUrlController.dispose();
     _githubUrlController.dispose();
@@ -134,6 +253,75 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
     }
   }
 
+  Future<void> _generateSummaryWithAI() async {
+    if (_isSubmitting || _isGeneratingSummary) return;
+
+    final designation = _currentDesignationController.text.trim();
+    if (designation.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your current designation first.'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+      return;
+    }
+
+    try {
+      setState(() => _isGeneratingSummary = true);
+
+      final prompt = '''
+You are an expert resume writer.
+
+Write a professional resume summary for the following role:
+Current designation: "$designation"
+
+Requirements:
+- 2 to 3 sentences
+- 50 to 80 words
+- Professional tone, ATS-friendly keywords
+- No bullet points, no emojis, no markdown, no quotes
+- Do not invent specific numbers/metrics
+
+Return only the summary text.
+''';
+
+      final generated = await _aiService.generateText(
+        prompt: prompt,
+        temperature: 0.6,
+        maxOutputTokens: 220,
+      );
+
+      var text = generated.trim();
+      // Remove accidental code fences/quotes if present.
+      if (text.startsWith('```')) {
+        text = text.replaceAll(RegExp(r'^```[a-zA-Z]*\s*'), '');
+        text = text.replaceAll(RegExp(r'```$'), '');
+        text = text.trim();
+      }
+      if ((text.startsWith('"') && text.endsWith('"')) ||
+          (text.startsWith("'") && text.endsWith("'"))) {
+        text = text.substring(1, text.length - 1).trim();
+      }
+
+      _summaryController.text = text;
+      _summaryController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _summaryController.text.length),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('AI summary failed: $e'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isGeneratingSummary = false);
+    }
+  }
+
   Future<void> _submitProfile() async {
     setState(() {
       _isSubmitting = true;
@@ -141,8 +329,10 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
 
     final success = await ref.read(authNotifierProvider.notifier).updateProfile(
           displayName: _fullNameController.text.trim(),
+          photoUrl: _photoUrl,
           phone: _phoneController.text.trim(),
           location: _locationController.text.trim(),
+          currentDesignation: _currentDesignationController.text.trim(),
           linkedInUrl: _linkedInUrlController.text.trim().isEmpty
               ? null
               : _linkedInUrlController.text.trim(),
@@ -190,6 +380,35 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
     }
   }
 
+  Future<void> _confirmAndSignOutToLogin() async {
+    if (_isSubmitting) return;
+
+    final shouldSignOut = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Go back to login?'),
+        content: const Text(
+          'You will be signed out so you can sign in with another account. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldSignOut != true) return;
+    if (!mounted) return;
+
+    await ref.read(authNotifierProvider.notifier).signOut();
+  }
+
   String? _validateUrl(String? value) {
     if (value == null || value.trim().isEmpty) {
       return null; // Optional field
@@ -210,6 +429,54 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
 
+    final baseTheme = Theme.of(context);
+    final themed = baseTheme.copyWith(
+      textTheme: baseTheme.textTheme.apply(
+        bodyColor: Colors.white,
+        displayColor: Colors.white,
+      ),
+      iconTheme: baseTheme.iconTheme.copyWith(color: Colors.white70),
+      textSelectionTheme: const TextSelectionThemeData(
+        cursorColor: Colors.white,
+        selectionColor: Color(0x552563EB),
+        selectionHandleColor: Color(0xFF2563EB),
+      ),
+      inputDecorationTheme: baseTheme.inputDecorationTheme.copyWith(
+        filled: true,
+        fillColor: const Color(0xFF1B2236),
+        hintStyle: const TextStyle(
+          color: Color(0xFF94A3B8),
+          fontWeight: FontWeight.w500,
+        ),
+        labelStyle: const TextStyle(
+          color: Colors.white70,
+          fontWeight: FontWeight.w600,
+        ),
+        floatingLabelStyle: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+        prefixIconColor: Colors.white70,
+        suffixIconColor: Colors.white70,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFF2C3757)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppTheme.errorColor),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppTheme.errorColor, width: 2),
+        ),
+      ),
+    );
+
     // If profile becomes complete, this page will be replaced by AuthWrapper
     if (authState.user != null && _isProfileComplete(authState.user!)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -219,13 +486,35 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
       });
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Complete Your Profile'),
-        automaticallyImplyLeading: false,
-      ),
-      body: Column(
-        children: [
+    return Theme(
+      data: themed,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF101322),
+        appBar: AppBar(
+          title: const Text('Complete Your Profile'),
+          automaticallyImplyLeading: false,
+          backgroundColor: const Color(0xFF101322),
+          foregroundColor: Colors.white,
+          iconTheme: const IconThemeData(color: Colors.white),
+          titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _isSubmitting
+                ? null
+                : () async {
+                    if (_currentStep == 1) {
+                      setState(() => _currentStep = 0);
+                    } else {
+                      await _confirmAndSignOutToLogin();
+                    }
+                  },
+          ),
+        ),
+        body: Column(
+          children: [
           // Progress indicator
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -264,12 +553,12 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
           Container(
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF101322),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, -2),
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, -6),
                 ),
               ],
             ),
@@ -282,11 +571,11 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
                       padding: const EdgeInsets.only(bottom: 12.0),
                       child: SizedBox(
                         width: double.infinity,
-                        child: OutlinedButton(
+                        child: TextButton(
                           onPressed: _isSubmitting ? null : _skipStep,
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            side: BorderSide(color: AppTheme.primaryColor),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white.withOpacity(0.85),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
                           child: const Text(
                             "I'll add these information later",
@@ -295,39 +584,109 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
                         ),
                       ),
                     ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isSubmitting ? null : _saveAndContinue,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: _isSubmitting
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                  if (_currentStep == 1) ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: _isSubmitting
+                                ? null
+                                : () => setState(() => _currentStep = 0),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: BorderSide(
+                                color: Colors.white.withOpacity(0.25),
                               ),
-                            )
-                          : Text(
-                              _currentStep == 1 ? 'Complete Profile' : 'Next',
-                              style: const TextStyle(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: const Text(
+                              'Back',
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: _isSubmitting ? null : _saveAndContinue,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryColor,
+                              disabledBackgroundColor:
+                                  AppTheme.primaryColor.withOpacity(0.55),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: _isSubmitting
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor:
+                                          AlwaysStoppedAnimation<Color>(Colors.white),
+                                    ),
+                                  )
+                                : const Text(
+                                    'Complete',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
+                  ] else ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isSubmitting ? null : _saveAndContinue,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryColor,
+                          disabledBackgroundColor:
+                              AppTheme.primaryColor.withOpacity(0.55),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: _isSubmitting
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor:
+                                      AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : const Text(
+                                'Next',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -338,38 +697,127 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.person_add, size: 64, color: AppTheme.primaryColor),
-          const SizedBox(height: 16),
-          Text(
-            'Welcome!',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
-                ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Let\'s start with some basic information',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.textSecondary,
-                ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 32),
           Text(
             'Basic Information',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
+                  color: Colors.white,
                 ),
           ),
           const SizedBox(height: 8),
           Text(
             'Please provide the following required information',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textSecondary,
+                  color: Colors.white.withOpacity(0.7),
                 ),
+          ),
+          const SizedBox(height: 16),
+          // Photo upload
+          InkWell(
+            onTap: (_isUploadingPhoto || _isSubmitting) ? null : _pickAndUploadPhoto,
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF111827).withOpacity(0.25),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(0.10)),
+              ),
+              child: Row(
+                children: [
+                  // Avatar + edit badge
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFF1B2236),
+                          border: Border.all(color: Colors.white.withOpacity(0.18)),
+                        ),
+                        child: ClipOval(
+                          child: _photoBytes != null
+                              ? Image.memory(_photoBytes!, fit: BoxFit.cover)
+                              : (_photoUrl != null && _photoUrl!.isNotEmpty)
+                                  ? Image.network(_photoUrl!, fit: BoxFit.cover)
+                                  : const Icon(
+                                      Icons.camera_alt_outlined,
+                                      color: Colors.white70,
+                                      size: 22,
+                                    ),
+                        ),
+                      ),
+                      Positioned(
+                        right: -2,
+                        bottom: -2,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFF101322),
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.edit,
+                            size: 12,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      if (_isUploadingPhoto)
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black.withOpacity(0.35),
+                            ),
+                            child: const Center(
+                              child: SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Upload Photo',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'JPG or PNG, max 5MB',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Colors.white.withOpacity(0.65),
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: Colors.white.withOpacity(0.35),
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 24),
           TextFormField(
@@ -407,19 +855,32 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
             validator: (value) => Validators.required(value, fieldName: 'Location'),
             enabled: !_isSubmitting,
           ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _currentDesignationController,
+            decoration: const InputDecoration(
+              labelText: 'Current Designation *',
+              hintText: 'e.g., Software Engineer',
+              prefixIcon: Icon(Icons.badge_outlined),
+            ),
+            textCapitalization: TextCapitalization.words,
+            validator: (value) =>
+                Validators.required(value, fieldName: 'Current Designation'),
+            enabled: !_isSubmitting,
+          ),
           const SizedBox(height: 32),
           Text(
             'Contact & Summary',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
+                  color: Colors.white,
                 ),
           ),
           const SizedBox(height: 8),
           Text(
             'Add your professional links and summary (optional)',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textSecondary,
+                  color: Colors.white.withOpacity(0.7),
                 ),
           ),
           const SizedBox(height: 16),
@@ -461,10 +922,23 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _summaryController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Professional Summary',
-              hintText: 'Write a brief summary about yourself',
+              hintText: 'Briefly describe your professional background...',
               alignLabelWithHint: true,
+              suffixIcon: _isGeneratingSummary
+                  ? const Padding(
+                      padding: EdgeInsets.all(14.0),
+                      child: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : IconButton(
+                      onPressed: (_isSubmitting) ? null : _generateSummaryWithAI,
+                      icon: const Icon(Icons.auto_awesome),
+                    ),
             ),
             maxLines: 5,
             enabled: !_isSubmitting,
@@ -473,7 +947,7 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
           Text(
             '* Required fields',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textSecondary,
+                  color: Colors.white.withOpacity(0.7),
                 ),
           ),
         ],
@@ -491,7 +965,7 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
           'Professional Details',
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimary,
+                color: Colors.white,
               ),
           textAlign: TextAlign.center,
         ),
@@ -499,7 +973,7 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
         Text(
           'Add your education, experience, skills, projects, and certifications (optional)',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.textSecondary,
+                color: Colors.white.withOpacity(0.7),
               ),
           textAlign: TextAlign.center,
         ),
@@ -580,7 +1054,7 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
         Text(
           'You can skip this step and add these details later',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppTheme.textSecondary,
+                color: Colors.white.withOpacity(0.7),
               ),
           textAlign: TextAlign.center,
         ),
@@ -602,7 +1076,7 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
                   title,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
+                        color: Colors.white,
                       ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -632,7 +1106,7 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
         child: Text(
           message,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.textSecondary,
+                color: Colors.white.withOpacity(0.7),
               ),
           textAlign: TextAlign.center,
         ),
@@ -1202,6 +1676,8 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
         user.phone != null &&
         user.phone!.isNotEmpty &&
         user.location != null &&
-        user.location!.isNotEmpty;
+        user.location!.isNotEmpty &&
+        user.currentDesignation != null &&
+        user.currentDesignation!.isNotEmpty;
   }
 }

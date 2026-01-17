@@ -3,7 +3,7 @@ class AppConstants {
   AppConstants._();
 
   // App Information
-  static const String appName = 'ResumeIQ';
+  static const String appName = 'ResumeAI';
   static const String appVersion = '1.0.0';
 
   // Collections
