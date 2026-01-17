@@ -26,7 +26,7 @@ class ResumeAIApp extends StatelessWidget {
     return MaterialApp(
       title: 'ResumeAI',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
+      theme: AppTheme.darkTheme,
       home: const AuthWrapper(),
     );
   }

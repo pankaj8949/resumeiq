@@ -11,12 +11,15 @@ class AppTheme {
   static const Color errorColor = Color(0xFFEF4444); // Red
   static const Color warningColor = Color(0xFFF59E0B); // Amber
   static const Color successColor = Color(0xFF10B981); // Green
-  static const Color surfaceColor = Color(0xFFF8FAFC);
-  static const Color backgroundColor = Color(0xFFFFFFFF);
+  // Dark palette (matches Profile Setup page)
+  static const Color backgroundColor = Color(0xFF101322); // #101322
+  static const Color surfaceColor = Color(0xFF1B2236); // #1B2236 (inputs)
+  static const Color cardColor = Color(0xFF111827); // dark card surface
+  static const Color borderColor = Color(0xFF2C3757); // subtle borders
 
   // Text Colors
-  static const Color textPrimary = Color(0xFF1E293B);
-  static const Color textSecondary = Color(0xFF64748B);
+  static const Color textPrimary = Color(0xFFFFFFFF);
+  static const Color textSecondary = Color(0xFFCBD5E1);
   static const Color textTertiary = Color(0xFF94A3B8);
 
   // Resume Score Colors
@@ -25,11 +28,11 @@ class AppTheme {
   static const Color scoreFair = Color(0xFFF59E0B); // 40-59
   static const Color scorePoor = Color(0xFFEF4444); // 0-39
 
-  /// Light Theme
-  static ThemeData get lightTheme {
+  /// Dark Theme (default)
+  static ThemeData get darkTheme {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: primaryColor,
-      brightness: Brightness.light,
+      brightness: Brightness.dark,
       primary: primaryColor,
       secondary: secondaryColor,
       error: errorColor,
@@ -60,9 +63,9 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.grey.shade200),
+          side: const BorderSide(color: borderColor),
         ),
-        color: backgroundColor,
+        color: cardColor,
       ),
 
       // Elevated Button Theme
@@ -80,17 +83,28 @@ class AppTheme {
         ),
       ),
 
+      // Outlined Button Theme
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: textPrimary,
+          side: const BorderSide(color: borderColor),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+
       // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: const BorderSide(color: borderColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: const BorderSide(color: borderColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -100,7 +114,21 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: errorColor),
         ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: errorColor, width: 2),
+        ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        labelStyle: const TextStyle(
+          color: Color(0xFFCBD5E1),
+          fontWeight: FontWeight.w600,
+        ),
+        hintStyle: const TextStyle(
+          color: textTertiary,
+          fontWeight: FontWeight.w500,
+        ),
+        prefixIconColor: Color(0xFFCBD5E1),
+        suffixIconColor: Color(0xFFCBD5E1),
       ),
 
       // Text Theme
@@ -163,7 +191,7 @@ class AppTheme {
         bodySmall: GoogleFonts.inter(
           fontSize: 12,
           fontWeight: FontWeight.normal,
-          color: textSecondary,
+          color: textTertiary,
         ),
         labelLarge: GoogleFonts.inter(
           fontSize: 14,
