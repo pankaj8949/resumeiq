@@ -15,6 +15,7 @@ class UserEntity extends Equatable {
     this.portfolioUrl,
     this.githubUrl,
     this.summary,
+    this.profileCompletionDone = false,
     this.education = const [],
     this.experience = const [],
     this.skills = const [],
@@ -35,6 +36,7 @@ class UserEntity extends Equatable {
   final String? portfolioUrl;
   final String? githubUrl;
   final String? summary;
+  final bool profileCompletionDone;
   final List<EducationEntity> education;
   final List<ExperienceEntity> experience;
   final List<String> skills;
@@ -56,6 +58,7 @@ class UserEntity extends Equatable {
         portfolioUrl,
         githubUrl,
         summary,
+        profileCompletionDone,
         education,
         experience,
         skills,

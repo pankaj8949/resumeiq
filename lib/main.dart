@@ -44,14 +44,7 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
   bool _hasCompletedInitialAuthCheck = false;
 
   bool _isProfileComplete(UserModel user) {
-    return user.displayName != null &&
-        user.displayName!.isNotEmpty &&
-        user.phone != null &&
-        user.phone!.isNotEmpty &&
-        user.location != null &&
-        user.location!.isNotEmpty &&
-        user.currentDesignation != null &&
-        user.currentDesignation!.isNotEmpty;
+    return user.profileCompletionDone;
   }
 
   @override

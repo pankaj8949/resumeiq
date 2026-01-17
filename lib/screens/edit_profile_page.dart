@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import '../core/theme/app_theme.dart';
 import '../widgets/common/custom_text_field.dart';
 import '../core/utils/validators.dart';
@@ -37,11 +33,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
   bool _isLoading = false;
 
-  // Photo
-  bool _isUploadingPhoto = false;
-  String? _photoUrl;
-  Uint8List? _photoBytes;
-
   @override
   void initState() {
     super.initState();
@@ -55,7 +46,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     _portfolioController = TextEditingController(text: user?.portfolioUrl ?? '');
     _githubController = TextEditingController(text: user?.githubUrl ?? '');
     _summaryController = TextEditingController(text: user?.summary ?? '');
-    _photoUrl = user?.photoUrl;
     
     // Convert entities to models
     _educationList.addAll((user?.education ?? []).map((e) => Education(
@@ -108,101 +98,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     super.dispose();
   }
 
-  Future<void> _pickAndUploadPhoto() async {
-    if (_isUploadingPhoto || _isLoading) return;
-
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('You must be signed in to upload a photo.'),
-          backgroundColor: AppTheme.errorColor,
-        ),
-      );
-      return;
-    }
-
-    try {
-      setState(() => _isUploadingPhoto = true);
-
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: const ['jpg', 'jpeg', 'png'],
-        withData: true,
-      );
-
-      if (result == null || result.files.isEmpty) {
-        setState(() => _isUploadingPhoto = false);
-        return;
-      }
-
-      final file = result.files.first;
-      const maxBytes = 5 * 1024 * 1024;
-      if (file.size > maxBytes) {
-        setState(() => _isUploadingPhoto = false);
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Max file size is 5MB.'),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
-        return;
-      }
-
-      final bytes = file.bytes;
-      if (bytes == null) {
-        setState(() => _isUploadingPhoto = false);
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to read selected image. Please try again.'),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
-        return;
-      }
-
-      final ext = (file.extension ?? 'jpg').toLowerCase();
-      final contentType = ext == 'png' ? 'image/png' : 'image/jpeg';
-
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('profile_images')
-          .child(uid)
-          .child('photo_${DateTime.now().millisecondsSinceEpoch}.$ext');
-
-      await storageRef.putData(bytes, SettableMetadata(contentType: contentType));
-      final url = await storageRef.getDownloadURL();
-
-      if (!mounted) return;
-      setState(() {
-        _photoUrl = url;
-        _photoBytes = bytes;
-        _isUploadingPhoto = false;
-      });
-
-      if (kIsWeb) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Photo uploaded.'),
-            backgroundColor: AppTheme.successColor,
-          ),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _isUploadingPhoto = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Photo upload failed: $e'),
-          backgroundColor: AppTheme.errorColor,
-        ),
-      );
-    }
-  }
-
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -214,7 +109,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
     final success = await ref.read(authNotifierProvider.notifier).updateProfile(
           displayName: _displayNameController.text.trim(),
-          photoUrl: _photoUrl,
           phone: _phoneController.text.trim().isEmpty
               ? null
               : _phoneController.text.trim(),
@@ -328,112 +222,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Photo
-          InkWell(
-            onTap: (_isUploadingPhoto || _isLoading) ? null : _pickAndUploadPhoto,
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF111827).withOpacity(0.25),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(0.10)),
-              ),
-              child: Row(
-                children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFF1B2236),
-                          border: Border.all(color: Colors.white.withOpacity(0.18)),
-                        ),
-                        child: ClipOval(
-                          child: _photoBytes != null
-                              ? Image.memory(_photoBytes!, fit: BoxFit.cover)
-                              : (_photoUrl != null && _photoUrl!.isNotEmpty)
-                                  ? Image.network(_photoUrl!, fit: BoxFit.cover)
-                                  : const Icon(
-                                      Icons.camera_alt_outlined,
-                                      color: Colors.white70,
-                                      size: 22,
-                                    ),
-                        ),
-                      ),
-                      Positioned(
-                        right: -2,
-                        bottom: -2,
-                        child: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryColor,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppTheme.backgroundColor,
-                              width: 2,
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.edit,
-                            size: 12,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      if (_isUploadingPhoto)
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.black.withOpacity(0.35),
-                            ),
-                            child: const Center(
-                              child: SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Upload Photo',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'JPG or PNG, max 5MB',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.white.withOpacity(0.65),
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: Colors.white.withOpacity(0.35),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
           CustomTextField(
             controller: _displayNameController,
             label: 'Full Name',

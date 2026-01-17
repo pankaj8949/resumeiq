@@ -36,6 +36,7 @@ abstract class AuthRepository {
     String? portfolioUrl,
     String? githubUrl,
     String? summary,
+    bool? profileCompletionDone,
     List<EducationEntity>? education,
     List<ExperienceEntity>? experience,
     List<String>? skills,

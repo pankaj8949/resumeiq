@@ -35,6 +35,7 @@ abstract class AuthRemoteDataSource {
     String? portfolioUrl,
     String? githubUrl,
     String? summary,
+    bool? profileCompletionDone,
     List<EducationEntity>? education,
     List<ExperienceEntity>? experience,
     List<String>? skills,
@@ -211,6 +212,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? portfolioUrl,
     String? githubUrl,
     String? summary,
+    bool? profileCompletionDone,
     List<EducationEntity>? education,
     List<ExperienceEntity>? experience,
     List<String>? skills,
@@ -260,6 +262,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
       if (summary != null) {
         updateData['summary'] = summary;
+      }
+      if (profileCompletionDone != null) {
+        updateData['profileCompletionDone'] = profileCompletionDone;
       }
       if (education != null) {
         updateData['education'] = education
@@ -347,6 +352,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
               displayName:
                   firebaseUser.displayName ?? existingModel.displayName,
               photoUrl: firebaseUser.photoURL ?? existingModel.photoUrl,
+              profileCompletionDone: existingModel.profileCompletionDone,
               createdAt: existingModel.createdAt ?? DateTime.now(),
               updatedAt: DateTime.now(),
             );

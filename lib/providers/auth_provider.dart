@@ -212,6 +212,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String? portfolioUrl,
     String? githubUrl,
     String? summary,
+    bool? profileCompletionDone,
     List<Education>? education,
     List<Experience>? experience,
     List<String>? skills,
@@ -230,6 +231,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       portfolioUrl: portfolioUrl,
       githubUrl: githubUrl,
       summary: summary,
+      profileCompletionDone: profileCompletionDone,
       education: education
           ?.map(
             (e) => EducationEntity(
