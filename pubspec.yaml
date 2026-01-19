@@ -71,6 +71,7 @@ dependencies:
 
   # Error Handling
   logger: ^2.4.0
+  google_mobile_ads: ^7.0.0
 
 dev_dependencies:
   flutter_test:

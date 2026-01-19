@@ -101,6 +101,30 @@ Create `lib/core/config/gemini_api_key.txt` and add your API key (one line, no q
 flutter pub get
 ```
 
+### AdMob (Banner + Interstitial) Setup (Android)
+
+This project uses the Flutter plugin `google_mobile_ads`.
+
+- **AdMob App ID (Android)**: set in `android/app/src/main/AndroidManifest.xml` as:
+  - `com.google.android.gms.ads.APPLICATION_ID = ca-app-pub-7138268980308783~2096157555`
+- **Ad Unit IDs**: configured in `lib/ads/admob_ids.dart`
+  - Banner: `ca-app-pub-7138268980308783/4668697619`
+  - Interstitial: `ca-app-pub-7138268980308783/1040443792`
+- **Debug vs Release**: the code uses Google TEST ad unit IDs in debug builds and your real IDs in release builds (recommended).
+
+**Where the banner is shown**
+
+- Banner widget: `lib/widgets/admob_banner.dart`
+- Currently mounted in `lib/screens/main_navigation_page.dart` above the bottom navigation, **only on the Home tab**.
+  - To show the banner on all tabs, remove the `if (currentIndex == 0)` condition.
+
+**How to show an interstitial**
+
+Use `lib/ads/interstitial_ad_service.dart`:
+
+- Preload (best practice): call `InterstitialAdService.load()` early (e.g. when entering a flow).
+- Show at a natural break: call `InterstitialAdService.showIfAvailable()` (returns `true` if it actually showed).
+
 ### 5. Generate Code
 
 This project uses `freezed` and `json_serializable` for code generation. Run:

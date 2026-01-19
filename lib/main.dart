@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'models/user_model.dart';
 import 'core/config/firebase_config.dart';
 import 'core/theme/app_theme.dart';
@@ -14,6 +15,9 @@ void main() async {
 
   // Initialize Firebase
   await FirebaseConfig.initialize();
+
+  // Initialize AdMob (Google Mobile Ads SDK)
+  await MobileAds.instance.initialize();
 
   runApp(const ProviderScope(child: ResumeAIApp()));
 }
