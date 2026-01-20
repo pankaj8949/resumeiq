@@ -13,6 +13,7 @@ import '../ads/ads_config.dart';
 /// - enabled: bool
 /// - banner_ad_unit_id: string
 /// - interstitial_ad_unit_id: string
+/// - rewarded_ad_unit_id: string
 final adsConfigProvider = StreamProvider<AdsConfig>((ref) {
   final doc = FirebaseFirestore.instance.collection('app_config').doc('ads');
   return doc
@@ -54,4 +55,17 @@ final interstitialAdUnitIdProvider = Provider<String>((ref) {
   return (cfg?.interstitialAdUnitId?.isNotEmpty == true)
       ? cfg!.interstitialAdUnitId!
       : AdMobIds.testInterstitial;
+});
+
+/// Rewarded unit id:
+/// - Firestore value if present (debug + release)
+/// - Otherwise falls back to Google TEST rewarded ID
+final rewardedAdUnitIdProvider = Provider<String>((ref) {
+  final cfg = ref.watch(adsConfigProvider).maybeWhen(
+        data: (c) => c,
+        orElse: () => null,
+      );
+  return (cfg?.rewardedAdUnitId?.isNotEmpty == true)
+      ? cfg!.rewardedAdUnitId!
+      : AdMobIds.testRewarded;
 });

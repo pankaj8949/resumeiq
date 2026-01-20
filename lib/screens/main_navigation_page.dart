@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
@@ -23,6 +24,27 @@ class MainNavigationPage extends ConsumerStatefulWidget {
 }
 
 class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
+  Future<bool> _confirmExit() async {
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Exit app?'),
+        content: const Text('Do you want to close the app?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Exit'),
+          ),
+        ],
+      ),
+    );
+    return shouldExit ?? false;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -73,50 +95,67 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
       const ProfilePage(),
     ];
 
-    return Scaffold(
-      body: IndexedStack(index: currentIndex, children: pages),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Banner on the Home tab (change this condition to show on other tabs too)
-            if (currentIndex == 0) const AdMobBanner(),
-            NavigationBar(
-              selectedIndex: currentIndex,
-              onDestinationSelected: (index) {
-                _maybeShowTabInterstitial(index);
-                ref.read(navigationIndexProvider.notifier).state = index;
-              },
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.description_outlined),
-                  selectedIcon: Icon(Icons.description),
-                  label: 'Build',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.assessment_outlined),
-                  selectedIcon: Icon(Icons.assessment),
-                  label: 'Score',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.chat_bubble_outline),
-                  selectedIcon: Icon(Icons.chat_bubble),
-                  label: 'Interview',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.person_outline),
-                  selectedIcon: Icon(Icons.person),
-                  label: 'Profile',
-                ),
-              ],
-            ),
-          ],
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+
+        // If user is not on Home tab, go to Home tab instead of exiting.
+        if (ref.read(navigationIndexProvider) != 0) {
+          ref.read(navigationIndexProvider.notifier).state = 0;
+          return;
+        }
+
+        final shouldExit = await _confirmExit();
+        if (shouldExit) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(index: currentIndex, children: pages),
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Banner on the Home tab (change this condition to show on other tabs too)
+              if (currentIndex == 0) const AdMobBanner(),
+              NavigationBar(
+                selectedIndex: currentIndex,
+                onDestinationSelected: (index) {
+                  _maybeShowTabInterstitial(index);
+                  ref.read(navigationIndexProvider.notifier).state = index;
+                },
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: 'Home',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.description_outlined),
+                    selectedIcon: Icon(Icons.description),
+                    label: 'Build',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.assessment_outlined),
+                    selectedIcon: Icon(Icons.assessment),
+                    label: 'Score',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.chat_bubble_outline),
+                    selectedIcon: Icon(Icons.chat_bubble),
+                    label: 'Interview',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.person_outline),
+                    selectedIcon: Icon(Icons.person),
+                    label: 'Profile',
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

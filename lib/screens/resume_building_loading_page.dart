@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import '../core/theme/app_theme.dart';
@@ -7,8 +8,10 @@ import '../services/template_loader_service.dart';
 import '../services/html_to_pdf_service.dart';
 import '../services/template_replacement_service.dart';
 import '../providers/auth_provider.dart';
+import '../providers/ads_provider.dart';
 import '../models/user_model.dart';
 import 'package:intl/intl.dart';
+import '../ads/rewarded_ad_service.dart';
 
 /// Resume Building Loading Page - Converts HTML to PDF
 class ResumeBuildingLoadingPage extends ConsumerStatefulWidget {
@@ -37,6 +40,16 @@ class _ResumeBuildingLoadingPageState
   void initState() {
     super.initState();
     _convertToPdf();
+
+    // Preload rewarded ad so Save/Share can show quickly.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final enabled = ref.read(adsEnabledProvider);
+      if (!enabled) return;
+      final unitId = ref.read(rewardedAdUnitIdProvider);
+      // ignore: unawaited_futures
+      RewardedAdService.load(adUnitId: unitId);
+    });
   }
 
   Future<void> _convertToPdf() async {
@@ -151,7 +164,14 @@ class _ResumeBuildingLoadingPageState
       appBar: AppBar(
         title: const Text('Building Resume'),
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.backgroundColor,
+        foregroundColor: Colors.white,
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: AppTheme.backgroundColor,
+          statusBarIconBrightness: Brightness.light,
+          // iOS only (kept for completeness); dark = light icons
+          statusBarBrightness: Brightness.dark,
+        ),
         automaticallyImplyLeading: false,
       ),
       body: Center(
@@ -318,7 +338,21 @@ class _ResumeBuildingLoadingPageState
             child: Column(
               children: [
                 ElevatedButton.icon(
-                  onPressed: _savePdf,
+                  onPressed: () async {
+                    final enabled = ref.read(adsEnabledProvider);
+                    final unitId = ref.read(rewardedAdUnitIdProvider);
+                    if (!enabled) {
+                      await _savePdf();
+                      return;
+                    }
+
+                    await RewardedAdService.showOrLoadAndShow(
+                      adUnitId: unitId,
+                      onAfter: () async {
+                        await _savePdf();
+                      },
+                    );
+                  },
                   icon: const Icon(Icons.save),
                   label: const Text('Save PDF'),
                   style: ElevatedButton.styleFrom(
@@ -335,7 +369,21 @@ class _ResumeBuildingLoadingPageState
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
-                  onPressed: _sharePdf,
+                  onPressed: () async {
+                    final enabled = ref.read(adsEnabledProvider);
+                    final unitId = ref.read(rewardedAdUnitIdProvider);
+                    if (!enabled) {
+                      await _sharePdf();
+                      return;
+                    }
+
+                    await RewardedAdService.showOrLoadAndShow(
+                      adUnitId: unitId,
+                      onAfter: () async {
+                        await _sharePdf();
+                      },
+                    );
+                  },
                   icon: const Icon(Icons.share),
                   label: const Text('Share PDF'),
                   style: OutlinedButton.styleFrom(

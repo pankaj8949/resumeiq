@@ -14,12 +14,15 @@ class AdMobIds {
   static const String testBanner = 'ca-app-pub-3940256099942544/6300978111';
   static const String testInterstitial =
       'ca-app-pub-3940256099942544/1033173712';
+  static const String testRewarded = 'ca-app-pub-3940256099942544/5224354917';
 
   // Your production IDs
   static const String defaultProdBanner =
       'ca-app-pub-7138268980308783/4668697619';
   static const String defaultProdInterstitial =
       'ca-app-pub-7138268980308783/1040443792';
+  // Add your prod rewarded ID here later if you want a code fallback.
+  static const String defaultProdRewarded = testRewarded;
 
   /// Fallback banner ID when you don't use remote config providers.
   static String get banner => kReleaseMode ? defaultProdBanner : testBanner;
@@ -27,4 +30,7 @@ class AdMobIds {
   /// Fallback interstitial ID when you don't use remote config providers.
   static String get interstitial =>
       kReleaseMode ? defaultProdInterstitial : testInterstitial;
+
+  /// Fallback rewarded ID when you don't use remote config providers.
+  static String get rewarded => kReleaseMode ? defaultProdRewarded : testRewarded;
 }
