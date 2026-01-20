@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-import '../ads/admob_ids.dart';
+import '../providers/ads_provider.dart';
 
-class AdMobBanner extends StatefulWidget {
+class AdMobBanner extends ConsumerStatefulWidget {
   const AdMobBanner({
     super.key,
     this.size = AdSize.banner,
@@ -14,22 +15,29 @@ class AdMobBanner extends StatefulWidget {
   final Color? backgroundColor;
 
   @override
-  State<AdMobBanner> createState() => _AdMobBannerState();
+  ConsumerState<AdMobBanner> createState() => _AdMobBannerState();
 }
 
-class _AdMobBannerState extends State<AdMobBanner> {
+class _AdMobBannerState extends ConsumerState<AdMobBanner> {
   BannerAd? _banner;
   bool _isLoaded = false;
+  String? _loadedUnitId;
 
   @override
   void initState() {
     super.initState();
-    _load();
   }
 
-  void _load() {
+  void _disposeBanner() {
+    _banner?.dispose();
+    _banner = null;
+    _isLoaded = false;
+    _loadedUnitId = null;
+  }
+
+  void _load(String adUnitId) {
     final banner = BannerAd(
-      adUnitId: AdMobIds.banner,
+      adUnitId: adUnitId,
       size: widget.size,
       request: const AdRequest(),
       listener: BannerAdListener(
@@ -38,6 +46,7 @@ class _AdMobBannerState extends State<AdMobBanner> {
           setState(() {
             _banner = ad as BannerAd;
             _isLoaded = true;
+            _loadedUnitId = adUnitId;
           });
         },
         onAdFailedToLoad: (ad, error) {
@@ -46,6 +55,7 @@ class _AdMobBannerState extends State<AdMobBanner> {
           setState(() {
             _banner = null;
             _isLoaded = false;
+            _loadedUnitId = null;
           });
         },
       ),
@@ -56,12 +66,28 @@ class _AdMobBannerState extends State<AdMobBanner> {
 
   @override
   void dispose() {
-    _banner?.dispose();
+    _disposeBanner();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final enabled = ref.watch(adsEnabledProvider);
+    if (!enabled) {
+      if (_banner != null) _disposeBanner();
+      return const SizedBox.shrink();
+    }
+
+    final adUnitId = ref.watch(bannerAdUnitIdProvider);
+    if (_loadedUnitId != adUnitId) {
+      // Firestore value changed (or first build): reload banner with latest ID.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _disposeBanner();
+        _load(adUnitId);
+      });
+    }
+
     if (!_isLoaded || _banner == null) {
       return const SizedBox.shrink();
     }

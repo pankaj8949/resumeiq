@@ -6,9 +6,11 @@ import '../core/theme/app_theme.dart';
 import '../services/template_loader_service.dart';
 import '../services/template_replacement_service.dart';
 import '../providers/auth_provider.dart';
+import '../providers/ads_provider.dart';
 import '../models/user_model.dart';
 import 'edit_profile_page.dart';
 import 'resume_building_loading_page.dart';
+import '../ads/interstitial_ad_service.dart';
 
 /// Resume Preview Page - Shows HTML template preview with options to edit profile
 class ResumePreviewPage extends ConsumerStatefulWidget {
@@ -35,6 +37,16 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
   void initState() {
     super.initState();
     _initializeWebView();
+
+    // Preload interstitial so "Generate PDF" can show immediately.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final enabled = ref.read(adsEnabledProvider);
+      if (!enabled) return;
+      final unitId = ref.read(interstitialAdUnitIdProvider);
+      // ignore: unawaited_futures
+      InterstitialAdService.load(adUnitId: unitId);
+    });
   }
 
   Future<void> _initializeWebView() async {
@@ -292,27 +304,45 @@ class _ResumePreviewPageState extends ConsumerState<ResumePreviewPage> {
                                   widget.overrideUser ??
                                   ref.read(authNotifierProvider).user;
                               if (user != null) {
-                                final replacedHtml = TemplateReplacementService
-                                    .instance
-                                    .replaceTemplate(
-                                      widget.template.htmlContent,
-                                      user,
-                                    );
-                                final updatedTemplate = TemplateMetadata(
-                                  id: widget.template.id,
-                                  title: widget.template.title,
-                                  description: widget.template.description,
-                                  filePath: widget.template.filePath,
-                                  htmlContent: replacedHtml,
-                                );
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                    builder: (_) => ResumeBuildingLoadingPage(
-                                      template: updatedTemplate,
-                                      overrideUser: user,
+                                void goToBuildPdf() {
+                                  final replacedHtml =
+                                      TemplateReplacementService.instance
+                                          .replaceTemplate(
+                                    widget.template.htmlContent,
+                                    user,
+                                  );
+                                  final updatedTemplate = TemplateMetadata(
+                                    id: widget.template.id,
+                                    title: widget.template.title,
+                                    description: widget.template.description,
+                                    filePath: widget.template.filePath,
+                                    htmlContent: replacedHtml,
+                                  );
+                                  Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                      builder: (_) => ResumeBuildingLoadingPage(
+                                        template: updatedTemplate,
+                                        overrideUser: user,
+                                      ),
                                     ),
-                                  ),
-                                );
+                                  );
+                                }
+
+                                // Show interstitial at "Generate PDF" tap (then continue).
+                                final enabled = ref.read(adsEnabledProvider);
+                                if (enabled) {
+                                  final unitId =
+                                      ref.read(interstitialAdUnitIdProvider);
+                                  final shown =
+                                      InterstitialAdService.showIfAvailable(
+                                    adUnitId: unitId,
+                                    onDismissed: goToBuildPdf,
+                                    minInterval: const Duration(seconds: 30),
+                                  );
+                                  if (shown) return;
+                                }
+
+                                goToBuildPdf();
                               }
                             },
                       style: ElevatedButton.styleFrom(

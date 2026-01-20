@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/resume_provider.dart';
+import '../providers/ads_provider.dart';
+import '../ads/interstitial_ad_service.dart';
 import '../widgets/admob_banner.dart';
 import 'resume_builder_page.dart';
 import 'resume_scoring_page.dart';
@@ -13,12 +15,55 @@ import 'profile_page.dart';
 final navigationIndexProvider = StateProvider<int>((ref) => 0);
 
 /// Main navigation page with bottom navigation bar
-class MainNavigationPage extends ConsumerWidget {
+class MainNavigationPage extends ConsumerStatefulWidget {
   const MainNavigationPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainNavigationPage> createState() => _MainNavigationPageState();
+}
+
+class _MainNavigationPageState extends ConsumerState<MainNavigationPage> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Preload interstitial so it can show quickly on Score/Interview tab.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final enabled = ref.read(adsEnabledProvider);
+      if (!enabled) return;
+      final unitId = ref.read(interstitialAdUnitIdProvider);
+      // ignore: unawaited_futures
+      InterstitialAdService.load(adUnitId: unitId);
+    });
+  }
+
+  void _maybeShowTabInterstitial(int nextIndex) {
+    final enabled = ref.read(adsEnabledProvider);
+    if (!enabled) return;
+
+    // Only show interstitial when entering Score or Interview tabs.
+    if (nextIndex != 2 && nextIndex != 3) return;
+
+    final unitId = ref.read(interstitialAdUnitIdProvider);
+    InterstitialAdService.showIfAvailable(
+      adUnitId: unitId,
+      minInterval: const Duration(seconds: 60),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final currentIndex = ref.watch(navigationIndexProvider);
+
+    // If Firestore changes the interstitial unit id, preload the new one.
+    // (Riverpod requires `ref.listen` to be called during build.)
+    ref.listen<String>(interstitialAdUnitIdProvider, (prev, next) {
+      final enabled = ref.read(adsEnabledProvider);
+      if (!enabled) return;
+      // ignore: unawaited_futures
+      InterstitialAdService.load(adUnitId: next);
+    });
 
     final pages = [
       const DashboardContentPage(),
@@ -40,6 +85,7 @@ class MainNavigationPage extends ConsumerWidget {
             NavigationBar(
               selectedIndex: currentIndex,
               onDestinationSelected: (index) {
+                _maybeShowTabInterstitial(index);
                 ref.read(navigationIndexProvider.notifier).state = index;
               },
               destinations: const [
