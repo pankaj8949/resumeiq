@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -12,6 +13,27 @@ import 'profile_step_controller.dart';
 class ProfileCompletionFlowPage extends ConsumerWidget {
   const ProfileCompletionFlowPage({super.key});
 
+  Future<bool> _confirmExit(BuildContext context) async {
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Exit app?'),
+        content: const Text('Do you want to close the app?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Exit'),
+          ),
+        ],
+      ),
+    );
+    return shouldExit ?? false;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(profileStepControllerProvider);
@@ -19,123 +41,146 @@ class ProfileCompletionFlowPage extends ConsumerWidget {
     final stepNumber = controller.stepId.number;
     final total = controller.totalSteps;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF101322),
-      appBar: AppBar(
-        title: Text(controller.stepId.pageTitle),
-        automaticallyImplyLeading: false,
+    Future<void> handleBack() async {
+      if (controller.isSaving) return;
+
+      if (controller.canGoBack) {
+        controller.goBack();
+        return;
+      }
+
+      // On the first step, a system back would otherwise exit the app.
+      // Ask for confirmation before closing.
+      final shouldExit = await _confirmExit(context);
+      if (shouldExit) {
+        SystemNavigator.pop();
+      }
+    }
+
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        await handleBack();
+      },
+      child: Scaffold(
         backgroundColor: const Color(0xFF101322),
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: controller.isSaving
-              ? null
-              : () async {
-                  if (controller.canGoBack) {
-                    controller.goBack();
-                    return;
-                  }
-                  // If user is on first step, going "back" means leaving onboarding.
-                  // We sign out to return to Login (current app behavior).
-                  final shouldSignOut = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Go back to login?'),
-                      content: const Text(
-                        'You will be signed out so you can sign in with another account. Continue?',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('Cancel'),
+        appBar: AppBar(
+          title: Text(controller.stepId.pageTitle),
+          automaticallyImplyLeading: false,
+          backgroundColor: const Color(0xFF101322),
+          foregroundColor: Colors.white,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: controller.isSaving
+                ? null
+                : () async {
+                    if (controller.canGoBack) {
+                      controller.goBack();
+                      return;
+                    }
+                    // If user is on first step, going "back" means leaving onboarding.
+                    // We sign out to return to Login (current app behavior).
+                    final shouldSignOut = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Go back to login?'),
+                        content: const Text(
+                          'You will be signed out so you can sign in with another account. Continue?',
                         ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('Sign out'),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (shouldSignOut == true) {
-                    await ref.read(authNotifierProvider.notifier).signOut();
-                  }
-                },
-        ),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: LinearProgressIndicator(
-                    value: stepNumber / total,
-                    backgroundColor: AppTheme.surfaceColor,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppTheme.primaryColor,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Step $stepNumber of $total',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.primaryColor,
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text('Sign out'),
+                          ),
+                        ],
                       ),
-                ),
-              ],
-            ),
+                    );
+                    if (shouldSignOut == true) {
+                      await ref.read(authNotifierProvider.notifier).signOut();
+                    }
+                  },
           ),
-          if (controller.error != null)
+        ),
+        body: Column(
+          children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline, color: AppTheme.errorColor, size: 18),
-                  const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      controller.error!,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppTheme.errorColor,
-                            fontWeight: FontWeight.w600,
-                          ),
+                    child: LinearProgressIndicator(
+                      value: stepNumber / total,
+                      backgroundColor: AppTheme.surfaceColor,
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        AppTheme.primaryColor,
+                      ),
                     ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Step $stepNumber of $total',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.primaryColor,
+                        ),
                   ),
                 ],
               ),
             ),
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 220),
-              switchInCurve: Curves.easeOut,
-              switchOutCurve: Curves.easeIn,
-              transitionBuilder: (child, animation) {
-                final offset = Tween<Offset>(
-                  begin: const Offset(0.08, 0),
-                  end: Offset.zero,
-                ).animate(animation);
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(position: offset, child: child),
-                );
-              },
-              child: _StepBody(
-                key: ValueKey(controller.stepId),
-                controller: controller,
+            if (controller.error != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error_outline, color: AppTheme.errorColor, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        controller.error!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppTheme.errorColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                switchInCurve: Curves.easeOut,
+                switchOutCurve: Curves.easeIn,
+                transitionBuilder: (child, animation) {
+                  final offset = Tween<Offset>(
+                    begin: const Offset(0.08, 0),
+                    end: Offset.zero,
+                  ).animate(animation);
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(position: offset, child: child),
+                  );
+                },
+                child: _StepBody(
+                  key: ValueKey(controller.stepId),
+                  controller: controller,
+                ),
               ),
             ),
-          ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: _BottomBar(controller: controller),
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: _BottomBar(controller: controller),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
