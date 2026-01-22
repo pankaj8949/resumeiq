@@ -3,10 +3,6 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'admob_ids.dart';
 
-/// Minimal interstitial ad loader/show helper.
-///
-/// Call [load] early (e.g. after login / when entering a flow),
-/// then call [showIfAvailable] at a natural break (e.g. after finishing an action).
 class InterstitialAdService {
   InterstitialAdService._();
 
@@ -45,16 +41,12 @@ class InterstitialAdService {
     final lastShownAt = _lastShownAt;
     if (lastShownAt != null &&
         DateTime.now().difference(lastShownAt) < minInterval) {
-      // Best-effort: keep one loaded for later.
-      // ignore: unawaited_futures
       load(adUnitId: adUnitId);
       return false;
     }
 
     final ad = _ad;
     if (ad == null) {
-      // Best-effort: start loading for next time.
-      // ignore: unawaited_futures
       load(adUnitId: adUnitId);
       return false;
     }
@@ -72,25 +64,16 @@ class InterstitialAdService {
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
         _ad = null;
-        // Try again next time.
-        // ignore: unawaited_futures
         load(adUnitId: adUnitId);
       },
     );
 
     ad.show();
     _lastShownAt = DateTime.now();
-    // The ad object cannot be reused after show().
     _ad = null;
     return true;
   }
 
-  /// Best-effort: ensure an ad is loaded, then show it.
-  ///
-  /// Useful for "one-off" moments like onboarding completion where you want to
-  /// *attempt* to show immediately after an action succeeds.
-  ///
-  /// Returns true if an ad was shown.
   static Future<bool> showAfterLoad({
     VoidCallback? onDismissed,
     required String adUnitId,
@@ -98,8 +81,6 @@ class InterstitialAdService {
     Duration pollInterval = const Duration(milliseconds: 120),
     Duration minInterval = const Duration(seconds: 60),
   }) async {
-    // Start loading if needed (no-op if already loading/available).
-    // ignore: unawaited_futures
     load(adUnitId: adUnitId);
 
     final end = DateTime.now().add(timeout);
@@ -119,4 +100,3 @@ class InterstitialAdService {
     _ad = null;
   }
 }
-

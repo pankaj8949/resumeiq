@@ -5,6 +5,7 @@ import '../core/theme/app_theme.dart';
 import '../widgets/common/loading_widget.dart';
 import '../providers/auth_provider.dart';
 import '../providers/resume_provider.dart';
+import '../providers/resume_stats_provider.dart';
 import '../services/resume_scoring_service.dart';
 import '../services/document_parser_service.dart';
 import '../models/resume_score_model.dart';
@@ -117,6 +118,10 @@ class _ResumeScoringPageState extends ConsumerState<ResumeScoringPage> {
             .read(resumeNotifierProvider.notifier)
             .updateResume(updatedResume);
       }
+
+      // Update Home stats immediately (+1 scored)
+      // ignore: unawaited_futures
+      ref.read(resumeStatsProvider.notifier).incrementScored();
 
       setState(() {
         _isAnalyzing = false;

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/resume_provider.dart';
+import '../providers/resume_stats_provider.dart';
 import '../providers/ads_provider.dart';
 import '../ads/interstitial_ad_service.dart';
 import '../widgets/admob_banner.dart';
@@ -188,12 +189,21 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> {
   Widget build(BuildContext context) {
     final user = ref.watch(authNotifierProvider).user;
     final resumeState = ref.watch(resumeNotifierProvider);
+    final stats = ref.watch(resumeStatsProvider);
 
     // Calculate resume counts
-    final totalResumes = resumeState.resumes.length;
-    final scoredResumes = resumeState.resumes
-        .where((r) => r.score != null)
-        .length;
+    final totalResumesFromDb = resumeState.resumes.length;
+    final scoredResumesFromDb =
+        resumeState.resumes.where((r) => r.score != null).length;
+
+    // Use the larger of DB count and local stats count so the UI updates
+    // immediately when user saves/scores, even if they don't persist resumes.
+    final totalResumes = totalResumesFromDb > stats.totalResumes
+        ? totalResumesFromDb
+        : stats.totalResumes;
+    final scoredResumes = scoredResumesFromDb > stats.scoredResumes
+        ? scoredResumesFromDb
+        : stats.scoredResumes;
 
     return Container(
       color: AppTheme.backgroundColor,

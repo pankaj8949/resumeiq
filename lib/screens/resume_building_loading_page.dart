@@ -12,6 +12,7 @@ import '../providers/ads_provider.dart';
 import '../models/user_model.dart';
 import 'package:intl/intl.dart';
 import '../ads/rewarded_ad_service.dart';
+import '../providers/resume_stats_provider.dart';
 
 /// Resume Building Loading Page - Converts HTML to PDF
 class ResumeBuildingLoadingPage extends ConsumerStatefulWidget {
@@ -134,6 +135,9 @@ class _ResumeBuildingLoadingPageState
       final destinationFile = await _pdfFile!.copy(destinationPath);
 
       if (await destinationFile.exists()) {
+        // Update Home stats immediately (+1 resume saved)
+        // ignore: unawaited_futures
+        ref.read(resumeStatsProvider.notifier).incrementTotal();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
