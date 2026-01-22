@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../ads/interstitial_ad_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_utils.dart' as AppDateUtils;
 import '../../../core/utils/validators.dart';
 import '../../../models/resume_model.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/ads_provider.dart';
 import '../../../widgets/common/custom_text_field.dart';
 import 'profile_step_controller.dart';
 
@@ -37,6 +39,14 @@ class ProfileCompletionFlowPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(profileStepControllerProvider);
+
+    // Best-effort preload so the interstitial is ready by the time onboarding completes.
+    final adsEnabled = ref.watch(adsEnabledProvider);
+    if (adsEnabled) {
+      final unitId = ref.watch(interstitialAdUnitIdProvider);
+      // ignore: unawaited_futures
+      InterstitialAdService.load(adUnitId: unitId);
+    }
 
     final stepNumber = controller.stepId.number;
     final total = controller.totalSteps;
@@ -186,13 +196,13 @@ class ProfileCompletionFlowPage extends ConsumerWidget {
   }
 }
 
-class _BottomBar extends StatelessWidget {
+class _BottomBar extends ConsumerWidget {
   const _BottomBar({required this.controller});
 
   final ProfileStepController controller;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isLast = controller.stepId == ProfileStepId.certifications;
 
     return Row(
@@ -218,7 +228,22 @@ class _BottomBar extends StatelessWidget {
                 ? null
                 : () async {
                     if (isLast) {
-                      await controller.completeFlow();
+                      final ok = await controller.completeFlow();
+                      if (!ok) return;
+
+                      // Show an interstitial right after onboarding completes.
+                      // (No context required; if not ready, it's a no-op.)
+                      final enabled = ref.read(adsEnabledProvider);
+                      if (!enabled) return;
+                      final unitId = ref.read(interstitialAdUnitIdProvider);
+                      // Wait briefly for the preloaded ad to become available.
+                      // If it doesn't load in time, we just continue without blocking the user.
+                      // ignore: unawaited_futures
+                      InterstitialAdService.showAfterLoad(
+                        adUnitId: unitId,
+                        minInterval: Duration.zero,
+                        timeout: const Duration(seconds: 3),
+                      );
                       return;
                     }
                     controller.goNext();

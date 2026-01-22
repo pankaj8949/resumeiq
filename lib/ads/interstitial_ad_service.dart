@@ -85,6 +85,35 @@ class InterstitialAdService {
     return true;
   }
 
+  /// Best-effort: ensure an ad is loaded, then show it.
+  ///
+  /// Useful for "one-off" moments like onboarding completion where you want to
+  /// *attempt* to show immediately after an action succeeds.
+  ///
+  /// Returns true if an ad was shown.
+  static Future<bool> showAfterLoad({
+    VoidCallback? onDismissed,
+    required String adUnitId,
+    Duration timeout = const Duration(seconds: 3),
+    Duration pollInterval = const Duration(milliseconds: 120),
+    Duration minInterval = const Duration(seconds: 60),
+  }) async {
+    // Start loading if needed (no-op if already loading/available).
+    // ignore: unawaited_futures
+    load(adUnitId: adUnitId);
+
+    final end = DateTime.now().add(timeout);
+    while (_ad == null && DateTime.now().isBefore(end)) {
+      await Future.delayed(pollInterval);
+    }
+
+    return showIfAvailable(
+      adUnitId: adUnitId,
+      minInterval: minInterval,
+      onDismissed: onDismissed,
+    );
+  }
+
   static void dispose() {
     _ad?.dispose();
     _ad = null;
