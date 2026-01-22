@@ -270,27 +270,6 @@ class _DashboardContentPageState extends ConsumerState<DashboardContentPage> {
                         ],
                       ),
                     ),
-                    IconButton(
-                      icon: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppTheme.borderColor,
-                            width: 1,
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.notifications_outlined,
-                          color: AppTheme.textPrimary,
-                          size: 20,
-                        ),
-                      ),
-                      onPressed: () {
-                        // Handle notification tap
-                      },
-                    ),
                   ],
                 ),
               ),
